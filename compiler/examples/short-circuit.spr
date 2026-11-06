@@ -1,0 +1,12 @@
+fn announce(x: int) -> bool {
+    print(x);
+    return true;
+}
+
+fn main() -> int {
+    print(false && announce(1));
+    print(true || announce(2));
+    print(true && announce(3));
+    print(false || announce(4));
+    return 0;
+}

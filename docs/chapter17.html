@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>走向本机代码 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="chapter17" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link " href="chapter09.html" ><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link " href="chapter14.html" ><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link active" href="chapter17.html" aria-current="page"><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link " href="chapter21.html" ><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link " href="source.html">配套源码与构建</a><a class="nav-link " href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link " href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><div class="article-eyebrow">CHAPTER 17 / 后端</div><article class="prose"><h1 id="section-1">17 本机代码生成：从无限名字到有限寄存器<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><h2 id="section-2">两条路线与学习目标<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><p>本章将<strong>已实现的 C++ 目标路径</strong>与<strong>自行实现机器后端的扩展实验</strong>分开。前者用 <code>--emit-cpp</code> 生成独立 C++11 程序，再交给宿主编译器生成本机文件；后者才需要自己实现指令选择、寄存器分配、帧布局与机器约束。</p>
+<p>两者都是编译路线。借用宿主后端不意味着前端没有完成编译，但也不能把它宣传成“已经自己写完 RISC-V 汇编后端”。本章目标是跑通真实本机路径，再手算一个最小机器后端。前置是第 11—16 章。</p>
+<h2 id="section-3">先跑通现成的目标路径<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><p>以第 12 章的 fact 程序为输入，在 PowerShell 中使用 UTF-8 保存目标源码：</p>
+<pre><code class="language-powershell"><span class="code-line">sprout <span class="hljs-literal">--emit-cpp</span> lesson12.sprout | <span class="hljs-built_in">Set-Content</span> <span class="hljs-literal">-Encoding</span> utf8 program.cpp</span><span class="code-line">g++ <span class="hljs-literal">-std</span>=c++<span class="hljs-number">11</span> <span class="hljs-literal">-O2</span> program.cpp <span class="hljs-literal">-o</span> program.exe</span><span class="code-line">.\program.exe</span></code></pre><p>预期仍输出 24。类 Unix shell 可用 <code>sprout --emit-cpp lesson12.sprout &gt; program.cpp</code> 并运行 <code>./program</code>。目标代码需带检查型整数运行时、必要的函数声明和一致的求值顺序。用 VM 与本机程序比较打印和错误行为，是第 21 章差分测试的基础。</p>
+<p>这里编译器本身与生成程序是两个不同对象：<code>-std=c++11</code> 可用于构建编译器，也可用于编译生成的目标。升级宿主编译器优化级别，不应改变 Sprout 语义。实际输出布局以生成文件为准，不需要期待它与某段手写 C++ 完全同形。</p>
+<h2 id="section-4">指令选择不是逐字翻译<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><p>三地址 IR 的 <code>t=add a,b</code> 可映射为某台机器的 add，但立即数位数、操作数寄存器类别、结果位置都可能受限制。若常量能放进立即数字段，<code>x+1</code> 可使用 add-immediate；大常量则可能需要多条指令构造。</p>
+<p>对树形表达式，可以用模式匹配：某种 IR 树匹配一种或几种机器指令，再比较代价。最简单的贪心从叶子生成；更高级的树覆盖用动态规划选择总代价较小的模式。DAG 中共享子表达式会使问题更复杂，因为重复展开可能增加计算。</p>
+<p>代价也不只是指令条数：延迟、吞吐、代码大小、寄存器压力、目标微架构都可能不同。第一版后端先追求明确、可验证的映射，别从最优指令选择开始。</p>
+<h2 id="section-5">先把所有值放到栈上<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><p>一个容易调试的最小后端可以给每个虚拟值分配栈槽，用少数临时寄存器完成 load、运算、store。它效率低，却能验证函数、分支、调用与 ABI。只有这条路线稳定后，再增加寄存器分配，否则地址计算和分配错误会混在一起。</p>
+<p>检查型加法不能只发一条会回绕的 add 就结束。后端必须额外检测溢出，或调用一个明确实现语义的运行时函数。目标机器的默认行为不会自动等于 Sprout 规则。</p>
+<h2 id="section-6">活跃区间与线性扫描<a class="heading-anchor" href="#section-6" aria-label="链接到本节">#</a></h2><p>虚拟值数量可以无限，物理寄存器却有限。根据第 14 章活跃信息，把每个值从第一次到最后一次活跃的编号区间作为保守近似。区间可能覆盖实际上不活跃的洞，这会降低分配精度，但不应漏掉真实活跃点。</p>
+<p>假设只有两个寄存器 R0、R1，区间采用闭区间：</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>值</th>
+<th>区间</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>[1,4]</td>
+<td>分配 R0</td>
+</tr>
+<tr>
+<td>B</td>
+<td>[2,6]</td>
+<td>分配 R1</td>
+</tr>
+<tr>
+<td>C</td>
+<td>[3,9]</td>
+<td>无空闲，溢出 C 到栈</td>
+</tr>
+<tr>
+<td>D</td>
+<td>[5,7]</td>
+<td>A 已结束，复用 R0</td>
+</tr>
+</tbody></table></div>
+<p>按起点排序，维护按终点排序的 active。新区间到来，先释放终点小于其起点的区间；若仍无空闲寄存器，比较新区间与 active 中最晚结束者，选择一个溢出。最晚结束启发式简单易实现，不保证在所有 CFG 上全局最优。</p>
+<p>若约定改用半开区间，释放条件也要同步改变。许多“偶尔错”的分配器其实只是端点约定不一致，使同一时刻还需要的两个值占了同一寄存器。</p>
+<h2 id="section-7">溢出、调用与图着色<a class="heading-anchor" href="#section-7" aria-label="链接到本节">#</a></h2><p>溢出不是把值忘掉：为其分配栈槽，在使用前 reload，在定义后按需 store，还要避免溢出代码自己需要更多寄存器时形成无穷重写。第一版可预留专用临时寄存器，之后再优化。</p>
+<p>函数调用会覆盖 caller-saved 寄存器。某值跨 call 活跃时，要放 callee-saved 寄存器，或在 call 前保存、后恢复。callees 使用保存寄存器时又有自己的保存义务。分配器必须把调用约束纳入模型，不能只看本函数的算术区间。</p>
+<p>图着色方法把同时活跃的值连边，物理寄存器视为颜色，相邻节点不能同色。它能处理更细的干涉关系，但构图、溢出与合并更复杂。线性扫描与图着色是不同权衡，不是“简单算法一定没用、复杂算法一定更快”。</p>
+<h2 id="section-8">实验、练习与验收<a class="heading-anchor" href="#section-8" aria-label="链接到本节">#</a></h2><p>先为四个区间手算线性扫描，再把 C 的终点改成 5，观察启发式会改为溢出 B。画出这组区间的干涉图，尝试用两色着色。最后在本机生成路线中比较 <code>-O0</code> 与 <code>-O2</code> 的输出，确认正常程序语义一致。</p>
+<details><summary>参考答案</summary>
+
+<p>当 C=[3,5] 时，B=[2,6] 比 C 结束晚，可将 B 溢出、让 C 接用它的寄存器。C 与 A、B 在起点 3 都重叠，因此三个值形成三角形，两个寄存器无法同时容纳。验收包括区间端点、跨调用活跃值、参数多于寄存器数量、递归调用与溢出后的 reload/store，而不仅是直线加法。</p>
+</details>
+
+<h2 id="section-9">来源与后续<a class="heading-anchor" href="#section-9" aria-label="链接到本节">#</a></h2><p>已阅读本地 <code>compilers-papers-we-love/code-generation/ra/TOPLAS1999 Linear Scan Register Allocation.pdf</code> 第 1—6 页，特别是区间定义、算法和例子；这里使用了重新设计的教学区间。<a href="https://riscv-non-isa.github.io/riscv-elf-psabi-doc/">RISC-V psABI</a> 是实际寄存器职责的依据。下一章继续把调用、对象文件、链接和运行时连起来。</p>
+</article><div class="chapter-complete"><label><input type="checkbox" id="mark-complete" data-chapter="chapter17"> 我已完成本章，并检查了验收条件</label><p>进度保存在此浏览器，可随时取消。</p></div><nav class="chapter-pagination" aria-label="章节翻页"><a href="chapter16.html"><small>← 上一章</small>优化必须保持语义</a><a href="chapter18.html"><small>下一章 →</small>ABI、链接与运行时</a></nav></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">两条路线与学习目标</a><a class="toc-depth-2" href="#section-3">先跑通现成的目标路径</a><a class="toc-depth-2" href="#section-4">指令选择不是逐字翻译</a><a class="toc-depth-2" href="#section-5">先把所有值放到栈上</a><a class="toc-depth-2" href="#section-6">活跃区间与线性扫描</a><a class="toc-depth-2" href="#section-7">溢出、调用与图着色</a><a class="toc-depth-2" href="#section-8">实验、练习与验收</a><a class="toc-depth-2" href="#section-9">来源与后续</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>

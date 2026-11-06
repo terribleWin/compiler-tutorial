@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>主题覆盖地图 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="coverage" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link " href="chapter09.html" ><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link " href="chapter14.html" ><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link " href="chapter17.html" ><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link " href="chapter21.html" ><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link " href="source.html">配套源码与构建</a><a class="nav-link " href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link active" href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><div class="article-eyebrow">SPROUT / 学习工具</div><article class="prose"><h1 id="section-1">资料地图：从本地专题找到课程入口<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><p>本书围绕“用 C++11 写出能编译 Sprout 的工具”重新组织材料，没有沿资料库的文件顺序逐篇翻译。两个原始资料库保持原样，网站发布的是原创讲解、示例和实现，不再分发其中的教材、论文 PDF 或视频。</p>
+<p>阅读工作分为两层：先查看目录、说明与资源清单，建立主题地图；再抽读与教学主线直接有关的论文、讲义章节和项目说明。<strong>没有逐页阅读所有 PDF，也没有逐篇验证目录内全部论文。</strong> 各章“来源与延伸阅读”标出实际使用的材料和选读页段；只列为后续方向的专题，不代表已精读。此页帮助你继续利用本地收藏，而不是把目录覆盖率冒充阅读完成度。</p>
+<h2 id="section-2">怎样使用这张地图<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><p>第一次学习按第 1—12 章完成可运行闭环，再按第 13—22 章扩展。遇到具体疑问时，先读对应章节和一份原始资料，不需要同时打开十本教材。表内路径相对于两个资料库根目录；浏览器无法直接访问你电脑中的 F 盘，需在本机文件管理器中定位。</p>
+<h2 id="section-3">compilers-resources：教材、讲义与实验<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>本地目录</th>
+<th>对应课程入口</th>
+<th>学习时要解决的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>books/Classic Textbooks</code>、<code>books/Compiler Labs</code>、<code>books/Compilers Projects</code></td>
+<td><a href="roadmap.html">路线与实验</a>、第 1—22 章</td>
+<td>选择一本核心教材备查，跟随一条实验主线，避免把不同实验语言的规范混在一起</td>
+</tr>
+<tr>
+<td><code>books/RegEx</code>、<code>material/re-nfa-dfa</code>、<code>material/general-automata-theory</code></td>
+<td><a href="chapter05.html">第 5 章</a>、<a href="chapter06.html">第 6 章</a></td>
+<td>正则怎样构造自动机，最长匹配、状态等价和最小化各解决什么问题</td>
+</tr>
+<tr>
+<td><code>material/lexical-analysis</code>、<code>projects/lexer</code>、<code>tools/lexer</code></td>
+<td>第 5—6 章</td>
+<td>如何从字符流得到带位置的 Token，并设计边界测试</td>
+</tr>
+<tr>
+<td><code>material/cfg-parsing</code>、<code>projects/parser</code>、<code>tools/parser</code>、<code>tools/grammar</code></td>
+<td><a href="chapter07.html">第 7 章</a>、<a href="chapter08.html">第 8 章</a></td>
+<td>递归下降与 LL/LR 如何联系，为什么会产生冲突</td>
+</tr>
+<tr>
+<td><code>material/attributed-grammars</code></td>
+<td><a href="chapter09.html">第 9 章</a>、<a href="chapter10.html">第 10 章</a>、第 14 章</td>
+<td>类型、环境等信息怎样沿树或图传递，为什么有些依赖需要迭代</td>
+</tr>
+<tr>
+<td><code>books/ANTLR</code>、<code>books/flex-bison-lex-yacc</code>、<code>tools/antlr4</code>、<code>projects/flexbison</code>、<code>projects/tpantlr2-code</code>、<code>projects/tpdsl-code</code></td>
+<td>第 5—10 章的扩展阅读</td>
+<td>手写流程理解后，怎样用生成器替换某一阶段，并保留同一语言契约</td>
+</tr>
+<tr>
+<td><code>material/code-generation</code>、<code>projects/code-generator</code>、<code>tools/code-generation</code></td>
+<td><a href="chapter11.html">第 11 章</a>、<a href="chapter12.html">第 12 章</a>、第 17 章</td>
+<td>AST 怎样变成指令，操作数栈、跳转回填和调用帧如何配合</td>
+</tr>
+<tr>
+<td><code>books/LLVM</code>、<code>material/llvm</code>、<code>tools/llvm</code></td>
+<td>第 13—16 章、<a href="chapter19.html">第 19 章</a></td>
+<td>IR、基本块、SSA 与目标生成处于什么层次，怎样接入已有工具链</td>
+</tr>
+<tr>
+<td><code>books/Computer Architecture</code>、<code>material/riscv</code>、<code>tools/assembly</code></td>
+<td><a href="chapter17.html">第 17 章</a>、<a href="chapter18.html">第 18 章</a>、第 19 章</td>
+<td>寄存器有限时怎么办，ABI、目标文件、链接与运行环境怎样相互约束</td>
+</tr>
+<tr>
+<td><code>books/PL</code>、<code>material/languages</code>、<code>tools/runtime</code></td>
+<td>第 4、10、18、22 章</td>
+<td>语法选择如何影响类型、内存、模块和运行时设计</td>
+</tr>
+<tr>
+<td><code>books/Design Patterns</code>、<code>tools/front-end</code>、<code>tools/clang</code>、<code>tools/gcc</code>、<code>tools/compiler-explorer</code></td>
+<td>第 2—3、9、20—21 章</td>
+<td>如何组织所有权、观察各阶段产物并建立可重复测试</td>
+</tr>
+<tr>
+<td><code>courses</code>、<code>lectures</code>、<code>projects/nju-cs-labs</code>、<code>competitions</code></td>
+<td><a href="roadmap.html">学习路线</a>、第 20—22 章</td>
+<td>如何把知识切成实验，如何从小语言走向课程实验和竞赛项目</td>
+</tr>
+<tr>
+<td><code>problem-sets</code>、<code>projects/grammar</code>、<code>projects/compilers</code></td>
+<td>第 6—10、20 章</td>
+<td>用独立题目和已有工程检验形式推导与实现能力</td>
+</tr>
+<tr>
+<td><code>material/compilers-history</code>、<code>material/tutorial</code>、<code>books/Compilers</code></td>
+<td>第 1 章、<a href="references.html">资料索引</a></td>
+<td>编译器的发展和工程背景；历史工具说明需与当前版本区分</td>
+</tr>
+<tr>
+<td><code>material/l-systems</code>、<code>latex</code>、<code>tools/mps</code>、<code>tools/xtext</code>、<code>tools/compilers-assistant</code></td>
+<td>第 8、22 章后的自选阅读</td>
+<td>扩展到生成系统、语言工作台和辅助工具；它们不是完成 Sprout 的前置要求</td>
+</tr>
+<tr>
+<td><code>tools/automata</code>、<code>papers-we-love</code></td>
+<td>第 6 章与下一张论文地图</td>
+<td>自动机工具辅助观察；旧论文入口应与独立论文库交叉定位</td>
+</tr>
+</tbody></table></div>
+<p>这里把相关目录合并展示，不表示同一行的每个文件已经实际读过。原库中不同年份的 LLVM、GCC、RISC-V 手册尤其适合作历史对照；实际安装、API 与命令参数应查对应版本的官方文档。</p>
+<h2 id="section-4">compilers-papers-we-love：原论文阅读入口<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>本地专题</th>
+<th>对应章节</th>
+<th>建议带着什么问题阅读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>teaching</code>、<code>history</code>、<code>compilers</code></td>
+<td>第 1、3、20 章</td>
+<td>为什么采用增量实现，怎样让每一步都有可验证结果</td>
+</tr>
+<tr>
+<td><code>re-nfa-dfa</code></td>
+<td>第 5—6 章</td>
+<td>自动机构造、最小化、最长匹配的正确性与复杂度条件是什么</td>
+</tr>
+<tr>
+<td><code>cfg</code>、<code>parsing</code></td>
+<td>第 7—8 章</td>
+<td>LL、LR 与通用分析器的能力边界、冲突和错误诊断如何表述</td>
+</tr>
+<tr>
+<td><code>attributed-grammars</code>、<code>type systems</code></td>
+<td>第 9—10、14 章</td>
+<td>树上上下文约束如何形式化，循环依赖与不动点何时可计算</td>
+</tr>
+<tr>
+<td><code>ir</code>、<code>optimization</code></td>
+<td>第 13—16 章</td>
+<td>为什么需要显式定义使用关系，SSA、控制依赖和程序依赖怎样帮助变换</td>
+</tr>
+<tr>
+<td><code>code-generation</code>，包括 <code>code-generation/ra</code></td>
+<td>第 17—18 章</td>
+<td>指令选择、活跃区间、寄存器分配与目标机器约束怎样配合</td>
+</tr>
+<tr>
+<td><code>llvm</code>、<code>riscv</code></td>
+<td>第 18—19 章</td>
+<td>如何区分语言语义、IR 语义、ISA、ABI 与具体运行环境</td>
+</tr>
+<tr>
+<td><code>compilers-testing</code>、<code>testing</code></td>
+<td><a href="chapter21.html">第 21 章</a></td>
+<td>差分测试需要什么前提，怎样生成有效程序并缩小失败输入</td>
+</tr>
+<tr>
+<td><code>programming-languages</code>、<code>pls</code>、<code>dsl</code></td>
+<td>第 4、10、22 章</td>
+<td>新语言和领域语言为什么需要明确类型、求值顺序与运行约定</td>
+</tr>
+<tr>
+<td><code>dl</code>、<code>tools</code></td>
+<td>第 19、22 章的后续路线</td>
+<td>张量与多层 IR、语言工具和研究原型怎样建立在基本编译流程之上</td>
+</tr>
+</tbody></table></div>
+<p>入门阶段推荐先读 Ghuloum 的增量教学思路，再在完成 CFG 和数据流后阅读 SSA 原论文，最后研究线性扫描和编译器测试。论文中的记号、源语言、机器和语义可能与 Sprout 不同，借鉴算法前先写下假设；不能把“论文说此改写成立”直接当成当前语言可无条件采用的证明。</p>
+<h2 id="section-5">从资料到代码要经过的检查<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><p>资料能解释方法，实际实现还需要自己的契约。采用一个算法前，明确输入、输出和前提；实现后，保留成功样例、拒绝样例与运行时边界样例。主线的精确行为见<a href="source.html">源码与规范导读</a>，例如 bool 不隐式转 int、整数溢出报错，以及保守返回分析。</p>
+<p>本书已运行的编译器模块与后续扩展也要分开核对：词法、语法、静态语义、字节码 VM 和 C++ 目标路径已有配套实现；SSA、直接机器后端、GC、模块和 JIT 作为进阶设计与实验。完整主题地图帮助你继续学习，不意味着这一个小工程已经包含所有工业系统的功能。</p>
+<h2 id="section-6">新增：现代 AI 编译主题的延伸<a class="heading-anchor" href="#section-6" aria-label="链接到本节">#</a></h2><p>第 23—25 章在传统路线之后独立增加，不改变原有主线。第 23 章讨论面向 AI 工作负载的模型图与部署链，第 24 章讨论张量程序与调度，第 25 章讨论用机器学习辅助编译决策。对应的本地延伸入口是 <code>dl/</code>、<code>ir/</code>、<code>llvm/</code>、<code>optimization/</code> 与 <code>code-generation/</code>；这些目录的论文年份与当前工具版本需分别核对。</p>
+<p>现代工具的具体接口依照各章链接的官方文档核对，不能直接把旧论文中的 API 当成当前接口。三个专题都有无第三方依赖的 Python 小实验，供先验证流程与结果；大型框架和异构硬件实验另行标出安装与未实测边界。<a href="tensor-lab.html">张量分块实验室</a>还能逐步显示调度区域与理想化数据复用。</p>
+</article></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">怎样使用这张地图</a><a class="toc-depth-2" href="#section-3">compilers-resources：教材、讲义与实验</a><a class="toc-depth-2" href="#section-4">compilers-papers-we-love：原论文阅读入口</a><a class="toc-depth-2" href="#section-5">从资料到代码要经过的检查</a><a class="toc-depth-2" href="#section-6">新增：现代 AI 编译主题的延伸</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>

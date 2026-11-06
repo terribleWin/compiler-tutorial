@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>证明它确实能工作 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="chapter21" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link " href="chapter09.html" ><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link " href="chapter14.html" ><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link " href="chapter17.html" ><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link active" href="chapter21.html" aria-current="page"><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link " href="source.html">配套源码与构建</a><a class="nav-link " href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link " href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><div class="article-eyebrow">CHAPTER 21 / 工程</div><article class="prose"><h1 id="section-1">21 测试、差分、模糊测试与可信编译<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><h2 id="section-2">学习目标与前置知识<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><p>前置是能够独立构建和运行第 20 章工程。本章属于主线验证与进阶测试路线：已有脚本覆盖 VM、静态错误、运行时错误和 C++ 目标；随机生成器、自动缩减器与形式验证属于可以继续完成的扩展。</p>
+<p>你要学会区分编译器崩溃、错误接受、错误拒绝、错误代码与资源超限，并知道一个可靠测试结果必须比较什么。测试通过增加信心，但不等于已证明全部输入正确。</p>
+<h2 id="section-3">先建立测试分类<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><p>正例验证合法程序的输出与退出状态。负例验证非法程序在正确阶段拒绝，并带合理位置。运行时错误例验证除零、溢出、深度和预算错误受控结束。结构例验证 token、AST 与字节码的关键关系；不必把容易变化的地址编号全部固定死。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>示例</th>
+<th>核对内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>词法</td>
+<td>非法字符、关键字边界、CRLF</td>
+<td>token 或词法错误位置</td>
+</tr>
+<tr>
+<td>语法</td>
+<td>缺分号、缺括号、错误表达式</td>
+<td>拒绝且定位接近问题</td>
+</tr>
+<tr>
+<td>语义</td>
+<td>bool 加 int、名字不存在</td>
+<td>执行前拒绝</td>
+</tr>
+<tr>
+<td>执行</td>
+<td>减法、递归、遮蔽、短路</td>
+<td>打印序列与状态</td>
+</tr>
+<tr>
+<td>保护</td>
+<td>无限循环、过深嵌套</td>
+<td>受控诊断，无宿主崩溃</td>
+</tr>
+</tbody></table></div>
+<p>测试退出码时不要把 Sprout main 的返回值误当成宿主退出码：当前主线正常执行返回 0，语言 main 的数值结果被忽略。LLVM 直接返回 42 的实验是另一条独立模块实验，不能混用其约定。</p>
+<h2 id="section-4">运行已有回归检查<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><p>在 compiler 目录构建后运行：</p>
+<pre><code class="language-text"><span class="code-line">python tests/run_tests.py ./sprout</span><span class="code-line">python tests/run_tests.py ./sprout --native g++</span></code></pre><p>Windows 可把 ./sprout 换成 <code>./sprout.exe</code>。第二条还会编译生成目标并比较多个 C++ 标准模式。若工具不可用，应该明确报告缺少哪个工具，不能把没有运行的检查算成通过。修改代码后先跑受影响类别，再跑完整回归，避免每次都用人工操作替代稳定测试。</p>
+<h2 id="section-5">差分测试：两条路线互相检查<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><p>同一个确定性的源程序，分别通过 VM 与生成 C++ 的本机程序执行，比较标准输出、错误类别和成功/失败状态。两者不同就有问题，但仅凭不同还不能确定哪条路线错，需要回到规格或第三个参考模型。</p>
+<p>两条后端可能共享 Checker、算术辅助规则或 AST，所以一致也不意味着绝对正确：共同 bug 不会被差分发现。可以为小表达式写独立数学模型，用 Python 大整数计算后显式检查 int32 范围，减少共享实现。</p>
+<p>资源上限是一个例外边界：VM 按字节码计数，目标程序按检查点计数，接近预算时不承诺在同一步停止。差分样例应远离保护上限，或只比较“受控拒绝”，不要硬要求错误文本和行号完全相同。</p>
+<h2 id="section-6">随机生成合法程序<a class="heading-anchor" href="#section-6" aria-label="链接到本节">#</a></h2><p>纯随机字节适合找词法和解析器崩溃；要找错误代码，更有效的是根据文法和类型生成合法 AST，再打印成源码。生成 int 表达式时只选 int 运算，生成 bool 时选比较、逻辑或 bool 字面量。维护可用变量表，避免随机产生未声明名字。</p>
+<p>限定深度、数值范围与循环次数，记录随机种子，使失败可重现。第一版只生成纯表达式，之后逐步加局部变量、分支、函数和有限循环。除零与溢出可以作为单独负例类别；对正常结果的差分测试应避免未定义或未约定行为。</p>
+<p>本地 Csmith 论文的关键启发正是：测试程序需要明确含义，否则多个结果未必意味着编译器错。不能把随机 C++ 中未规定的实参顺序直接当作 Sprout 的标准答案。</p>
+<h2 id="section-7">变形测试与缩减<a class="heading-anchor" href="#section-7" aria-label="链接到本节">#</a></h2><p>没有参考答案时，可以使用应当保持行为的变形：重命名不冲突的局部变量、加入多余括号、用内层独立块包住不逃逸的语句。这些变形仍有前提。例如随意交换两条赋值可能改变依赖；把 x 改写为 <code>(x+1)-1</code> 在检查型整数下可能新增溢出。</p>
+<p>发现失败后缩减程序：删除函数、删除语句、替换子表达式、减少常量，每次保留原来的失败性质。失败性质应定义清楚，例如“VM 与目标输出不同”，而不是“程序报了某个错”。否则缩减器可能把错误代码问题缩成一个毫不相关的语法错误。</p>
+<p>最小复现应附语言版本、工具版本、构建选项、源程序、实际结果、预期结果和稳定复现命令。修复后把它加入测试，才算真正关闭问题。</p>
+<h2 id="section-8">编译器本身的安全与健壮性<a class="heading-anchor" href="#section-8" aria-label="链接到本节">#</a></h2><p>源码是不可信输入：超长数字、深括号、长二元链、超大文件、CRLF、注释结尾都值得覆盖。对输入大小、递归深度与 AST 高度分别设限，因为长左结合链即使解析递归不深，也可能生成很深的树。</p>
+<p>使用地址/未定义行为检测工具可帮助发现宿主越界与悬垂引用，但支持情况依赖工具链。例如可在支持的 Clang/GCC 环境启用相应 sanitizer 后运行回归。内存检测发现的是编译器实现问题，不等于替代源语言的运行时检查。</p>
+<h2 id="section-9">从测试走向证明与翻译验证<a class="heading-anchor" href="#section-9" aria-label="链接到本节">#</a></h2><p>形式验证先为源与目标定义行为，再证明每个 pass 保持关系；翻译验证则对某一次编译的输入/输出检查等价或相容。一个较小入门项目是证明“纯算术表达式编译到栈机后，最终栈顶等于表达式求值”，使用结构归纳即可开始。</p>
+<p>测试与证明可以互补。证明依赖规格和可信边界，解析、链接与外部运行时是否被覆盖必须明确；测试可以覆盖未形式化的边界与工具集成。不要把“用了证明助手”当作整个发布链都自动可信。</p>
+<h2 id="section-10">练习、答案与验收<a class="heading-anchor" href="#section-10" aria-label="链接到本节">#</a></h2><p>设计十个正常例、十个静态负例、五个运行错误例；为每个写出类别与预期。再为纯表达式随机生成器设定固定种子，对 VM、本机路径和独立模型比较 100 个小样例。</p>
+<details><summary>参考答案</summary>
+
+<p>正常例应分散覆盖优先级、左结合、遮蔽、参数次序、前向调用、循环和短路。负例要有缺符号、名字错误、类型不符、漏返回；运行错误要覆盖边界溢出与除零，不能全部是同一类。随机失败应能凭种子复现并缩成更短程序。验收需保存测试命令与实际结果，未运行的环境应列为未验证。</p>
+</details>
+
+<h2 id="section-11">来源与后续<a class="heading-anchor" href="#section-11" aria-label="链接到本节">#</a></h2><p>已读本地 <code>compilers-papers-we-love/testing/PLDI2011 Finding and Understanding Bugs in C Compilers.pdf</code> 第 1—2 页，以及 <code>compilers-testing/CACM2008 Formal Verification of a Realistic Compiler.pdf</code> 第 1—3 页。<a href="https://llvm.org/docs/TestingGuide.html">LLVM 测试指南</a> 和 <a href="https://compcert.org/">CompCert 官方项目</a> 可作进一步阅读。下一章规划如何有秩序地扩展语言与研究主题。</p>
+</article><div class="chapter-complete"><label><input type="checkbox" id="mark-complete" data-chapter="chapter21"> 我已完成本章，并检查了验收条件</label><p>进度保存在此浏览器，可随时取消。</p></div><nav class="chapter-pagination" aria-label="章节翻页"><a href="chapter20.html"><small>← 上一章</small>按里程碑完成项目</a><a href="chapter22.html"><small>下一章 →</small>扩展你的语言</a></nav></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">学习目标与前置知识</a><a class="toc-depth-2" href="#section-3">先建立测试分类</a><a class="toc-depth-2" href="#section-4">运行已有回归检查</a><a class="toc-depth-2" href="#section-5">差分测试：两条路线互相检查</a><a class="toc-depth-2" href="#section-6">随机生成合法程序</a><a class="toc-depth-2" href="#section-7">变形测试与缩减</a><a class="toc-depth-2" href="#section-8">编译器本身的安全与健壮性</a><a class="toc-depth-2" href="#section-9">从测试走向证明与翻译验证</a><a class="toc-depth-2" href="#section-10">练习、答案与验收</a><a class="toc-depth-2" href="#section-11">来源与后续</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>

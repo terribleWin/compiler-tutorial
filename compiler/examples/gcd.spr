@@ -1,0 +1,12 @@
+fn gcd(a: int, b: int) -> int {
+    while (b != 0) {
+        let remainder = a % b;
+        a = b;
+        b = remainder;
+    }
+    return a;
+}
+fn main() -> int {
+    print(gcd(84, 30));
+    return 0;
+}

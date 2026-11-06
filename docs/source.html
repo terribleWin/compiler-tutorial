@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>配套源码与构建 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="source" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link " href="chapter09.html" ><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link " href="chapter14.html" ><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link " href="chapter17.html" ><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link " href="chapter21.html" ><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link active" href="source.html">配套源码与构建</a><a class="nav-link " href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link " href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><div class="article-eyebrow">SPROUT / 学习工具</div><article class="prose"><h1 id="section-1">配套源码：把整条主线运行一遍<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><p>参考实现是一份可以完整阅读的 C++11 源文件，包含 Lexer、Parser、AST、Checker、字节码 Generator、VM 和 CppEmitter。它面向教学，优先把阶段边界、检查和求值顺序写清楚。</p>
+<ul>
+<li><a href="downloads/sprout-source.zip">下载源码与示例、测试和规范</a></li>
+<li><a href="implementation.html">直接阅读完整实现</a></li>
+<li><a href="spec.html">完整语言规范</a>与<a href="exercises.html">从零实现的八个实验</a></li>
+<li><a href="downloads/sprout.cpp">下载单文件 sprout.cpp</a></li>
+<li><a href="https://github.com/terribleWin/compiler-tutorial">GitHub 仓库</a></li>
+</ul>
+<p>压缩包内有完整的 <code>compiler/</code> 目录，以下命令从课程仓库根目录执行；只下载源码包时，也应在包含 <code>compiler/</code> 的目录执行。示例中的 <code>.spr</code> 是约定后缀，扩展名本身不影响解析。</p>
+<h2 id="section-2">1. 构建与第一个程序<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><pre><code class="language-bash"><span class="code-line">g++ -std=c++11 -Wall -Wextra -Wpedantic compiler/src/sprout.cpp -o sprout</span><span class="code-line">./sprout compiler/examples/hello.spr</span></code></pre><p>Windows PowerShell：</p>
+<pre><code class="language-powershell"><span class="code-line">g++ <span class="hljs-literal">-std</span>=c++<span class="hljs-number">11</span> <span class="hljs-literal">-Wall</span> <span class="hljs-literal">-Wextra</span> <span class="hljs-literal">-Wpedantic</span> compiler/src/sprout.cpp <span class="hljs-literal">-o</span> sprout.exe</span><span class="code-line">.\sprout.exe compiler/examples/hello.spr</span></code></pre><p>随包 <code>hello.spr</code> 输出两行：</p>
+<pre><code class="language-text"><span class="code-line">7</span><span class="code-line">true</span></code></pre><p>首页的 42 示例是另一份最小程序；输出取决于实际输入文件，不要把不同示例的结果混在一起。</p>
+<h2 id="section-3">2. 观察每个阶段<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><pre><code class="language-bash"><span class="code-line">./sprout --tokens compiler/examples/hello.spr</span><span class="code-line">./sprout --ast compiler/examples/hello.spr</span><span class="code-line">./sprout --check compiler/examples/hello.spr</span><span class="code-line">./sprout --bytecode compiler/examples/hello.spr</span><span class="code-line">./sprout compiler/examples/fibonacci.spr</span></code></pre><p><code>--check</code> 通过时输出 <code>OK</code>。<code>--tokens</code> 只做词法扫描；其余观察模式先完成静态检查。Fibonacci 示例输出前十项，每项独占一行，从 0、1 开始。若只想验证 <code>fib(10) == 55</code>，需要把调用改为 <code>print(fib(10));</code>。</p>
+<p>成功返回进程码 0；编译或运行错误返回 1；文件与命令行使用错误返回 2。Sprout 的 <code>main</code> 必须返回 int，但正常返回值不作为宿主进程的退出码。</p>
+<h2 id="section-4">3. 获得本机可执行程序<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><p>在 POSIX 终端或 PowerShell 7 中：</p>
+<pre><code class="language-bash"><span class="code-line">./sprout --emit-cpp compiler/examples/fibonacci.spr &gt; program.cpp</span><span class="code-line">g++ -std=c++11 program.cpp -o program</span><span class="code-line">./program</span></code></pre><p>Windows 把可执行文件名改为 <code>sprout.exe</code>、<code>program.exe</code>。旧版 Windows PowerShell 5.1 的重定向默认编码不适合这里，可让 Python 原样保存输出字节：</p>
+<pre><code class="language-powershell"><span class="code-line">python <span class="hljs-literal">-c</span> <span class="hljs-string">&quot;import subprocess,pathlib; r=subprocess.run([&#x27;./sprout.exe&#x27;,&#x27;--emit-cpp&#x27;,&#x27;compiler/examples/fibonacci.spr&#x27;],capture_output=True,check=True); pathlib.Path(&#x27;program.cpp&#x27;).write_bytes(r.stdout)&quot;</span></span><span class="code-line">g++ <span class="hljs-literal">-std</span>=c++<span class="hljs-number">11</span> program.cpp <span class="hljs-literal">-o</span> program.exe</span><span class="code-line">.\program.exe</span></code></pre><p>生成的源码不依赖 Sprout 编译器或额外运行库。这个后端把 Sprout 翻译为 C++，再由宿主编译器完成机器码生成和链接。它与直接发射汇编的实验路线有所不同，各自完成的步骤在第 17–19 章说明。</p>
+<h2 id="section-5">4. 用 CMake 构建<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><pre><code class="language-bash"><span class="code-line">cmake -S compiler -B compiler/build -DCMAKE_CXX_STANDARD=11</span><span class="code-line">cmake --build compiler/build --config Release</span><span class="code-line">ctest --test-dir compiler/build -C Release --output-on-failure</span></code></pre><p>单配置构建通常在 <code>compiler/build/sprout</code> 或 <code>sprout.exe</code>；Visual Studio 多配置通常在 <code>compiler/build/Release/sprout.exe</code>。C++ 标准可改成 14、17、20，MSVC 的最低显式模式是 C++14。</p>
+<h2 id="section-6">5. 运行行为测试<a class="heading-anchor" href="#section-6" aria-label="链接到本节">#</a></h2><pre><code class="language-bash"><span class="code-line">python compiler/tests/run_tests.py ./sprout</span><span class="code-line">python compiler/tests/run_tests.py ./sprout --native g++</span></code></pre><p>这些检查覆盖优先级、左结合、名字遮蔽、循环、递归、互递归、左右求值顺序、短路、副作用、类型拒绝、整数边界、除零与资源上限。<code>--native g++</code> 还构建并运行生成的 C++，包括四个标准模式下的差分检查。Windows 参数改为 <code>./sprout.exe</code>。</p>
+<h2 id="section-7">6. 读代码时抓住这些接口<a class="heading-anchor" href="#section-7" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>符号</th>
+<th>输入 → 输出</th>
+<th>推荐章节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Lexer::scan</code></td>
+<td>源文本 → Token 序列</td>
+<td>第 5、6 章</td>
+</tr>
+<tr>
+<td><code>Parser</code></td>
+<td>Token → 语法树和函数集合</td>
+<td>第 7–9 章</td>
+</tr>
+<tr>
+<td><code>Checker</code></td>
+<td>AST → 类型、绑定和槽位信息</td>
+<td>第 10 章</td>
+</tr>
+<tr>
+<td><code>Generator</code></td>
+<td>已检查 AST → 每个函数的字节码</td>
+<td>第 11 章</td>
+</tr>
+<tr>
+<td><code>VM</code></td>
+<td>字节码 → 输出或运行陷阱</td>
+<td>第 12 章</td>
+</tr>
+<tr>
+<td><code>CppEmitter</code></td>
+<td>已检查 AST → 独立 C++ 源码</td>
+<td>第 17、20 章</td>
+</tr>
+</tbody></table></div>
+<p>可以在完整源码页使用浏览器查找类名。源码块提供行号、换行、放大与复制；复制不会包含行号。返回源码包查看 <code>SPEC.md</code> 获取全部边界条件，查看 <code>LABS.md</code> 获取分阶段验收任务。</p>
+<h2 id="section-8">7. 已知限制也属于规范<a class="heading-anchor" href="#section-8" aria-label="链接到本节">#</a></h2><p>本实现没有字符串、数组、全局变量、结构体、闭包或文件 IO。没有 SSA 优化器、直接机器码后端、字节码文件装载器或不可信字节码验证器。<code>--bytecode</code> 是供阅读的文本，不能交给 VM 当作文件执行。</p>
+<p>所有算术值按 int32 检查，bool 不与 int 隐式转换。函数必须静态保证返回；<code>while</code> 即使条件恒为 true，也不计为“保证返回”。源文件、语法深度、调用深度和执行量有上限；VM 的指令步数与 C++ 后端的检查点粒度不同，接近资源上限的程序不承诺在同一位置停止。</p>
+<p>理解边界后，再按<a href="roadmap.html">结业路线</a>添加一个新功能。修改前先运行全部测试，修改后补上新功能的成功与失败样例。</p>
+<h2 id="section-9">新增 AI 专题的独立实验<a class="heading-anchor" href="#section-9" aria-label="链接到本节">#</a></h2><p>源码压缩包还包含 <code>compiler/experiments/</code>：第 23 章的小型 AI 图编译链、第 24 章的矩阵乘调度、第 25 章的自动调优与学习式代价模型。它们用 Python 标准库演示现代编译方法，不把 Python 循环计时当作原生内核或 GPU 性能结论。具体命令、断言和实验边界以三章正文说明为准。</p>
+<p>也可分别下载：<a href="downloads/ai_pipeline_demo.py">AI 图编译链实验</a>、<a href="downloads/tensor_schedule_demo.py">张量调度实验</a>、<a href="downloads/ai_tuning_demo.py">自动调优实验</a>。</p>
+</article></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">1. 构建与第一个程序</a><a class="toc-depth-2" href="#section-3">2. 观察每个阶段</a><a class="toc-depth-2" href="#section-4">3. 获得本机可执行程序</a><a class="toc-depth-2" href="#section-5">4. 用 CMake 构建</a><a class="toc-depth-2" href="#section-6">5. 运行行为测试</a><a class="toc-depth-2" href="#section-7">6. 读代码时抓住这些接口</a><a class="toc-depth-2" href="#section-8">7. 已知限制也属于规范</a><a class="toc-depth-2" href="#section-9">新增 AI 专题的独立实验</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>

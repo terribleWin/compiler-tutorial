@@ -1,0 +1,51 @@
+# 张量分块实验室：改变调度，不改变结果
+
+矩阵乘的数学定义很短，快慢却取决于循环如何组织，以及数据是否被反复搬运。这个实验把一个矩阵乘拆成小块，观察一次调度如何选择 A、B、C 的区域，最后用朴素实现检查完整结果。
+
+它是浏览器里的教学模型，不是 GPU 模拟器或真实性能基准。先读[第 24 章](chapter24.html)的张量与调度，再来操作会更容易理解。
+
+<div class="lab-box" id="tensor-lab">
+<div class="tensor-selectors"><label>矩阵尺寸 <select id="matrix-size"><option value="4">4 × 4</option><option value="8">8 × 8</option></select></label><label>分块尺寸 <select id="tile-size"><option value="1">1 × 1</option><option value="2" selected>2 × 2</option><option value="4">4 × 4</option></select></label></div>
+<div class="lab-controls"><button type="button" id="tensor-step">累加一个小块</button><button type="button" id="tensor-run">运行到底</button><button type="button" id="tensor-reset">重置</button></div>
+<p class="tiny" id="tensor-region" aria-live="polite"></p>
+<div class="matrix-group"><section><h3>A / 左输入</h3><div class="matrix-scroll"><div class="matrix-grid" id="matrix-a"></div></div></section><section><h3>B / 右输入</h3><div class="matrix-scroll"><div class="matrix-grid" id="matrix-b"></div></div></section><section><h3>C / 累加结果</h3><div class="matrix-scroll"><div class="matrix-grid" id="matrix-c"></div></div></section></div>
+<div class="tensor-statistics"><div>块步骤<strong id="tensor-counter">0</strong></div><div>理想输入元素加载<strong id="tensor-loads">0</strong></div><div>标量算术操作<strong id="tensor-flops">0</strong></div><div>输入复用对比<strong id="tensor-reuse">—</strong></div></div>
+<p class="note" id="tensor-verdict" aria-live="polite"></p>
+</div>
+<script defer src="assets/tensor-lab.js"></script>
+
+## 高亮区域表示什么
+
+用半开区间 `起点:终点` 表示索引范围。例如分块尺寸为 2 时：
+
+```text
+C[0:2, 0:2] += A[0:2, 0:2] × B[0:2, 0:2]
+C[0:2, 0:2] += A[0:2, 2:4] × B[2:4, 0:2]
+```
+
+第一步只累加 k=0、1 对 C 左上区域的贡献；第二步补上 k=2、3 的贡献，此时该 C 小块才完整。随后处理 C 的下一个区域。不能把中间状态误认为最终矩阵。
+
+调度循环依次枚举 `i0`、`j0`、`k0`；每个小块内部仍执行标量 `C[i][j] += A[i][k] * B[k][j]`。实验的整数很小，计算结果在浏览器整数精确表示范围内；它没有借助浮点重结合掩盖数值误差。
+
+## 加载次数采用什么假设
+
+对 N×N 矩阵、T×T 分块，本模型假设每个块步骤把 A、B 的两个小块各加载一次，块内运算完全复用这些输入。每步加载 `2T²` 个元素，共有 `(N/T)³` 步，所以总计 `2N³/T` 次输入元素加载。无复用的标量参考模型为 `2N³`，两者比值为 T。
+
+算术仍然执行 `2N³` 次标量操作，把一次乘法和一次加法各记作一次。默认 N=4、T=2 时，全部完成后显示 8 个块步骤、64 次理想输入加载、128 次算术操作，复用对比为 2 倍。
+
+这个计数没有包含 C 的读写、真实缓存、寄存器溢出、数据对齐、同步、向量指令或矩阵指令。它也没有统计浏览器真实内存访问。T 更大不保证实机更快：超过缓存/寄存器容量、降低并行度或引入边界处理都可能抵消复用收益。因此这里只能用它解释数据复用的方向，不能据此宣称某段 GPU 代码快了 T 倍。
+
+## 三个实验与验收
+
+1. 用相同 N，分别选择 T=1、2、4 并运行到底。核对 C 逐元素相同，而加载模型改变。
+2. 在 T=2 下逐步执行两次。为什么 C 只有左上小块可能非零，其他位置仍是零？
+3. 将 N 从 4 改为 8。观察算术操作为何增长 8 倍，而不是 4 倍。
+
+<details>
+<summary>答案与解释</summary>
+
+相同 N 对应相同数学问题，调度只改变计算分组，所以结果相同。两次累加都属于同一个 `(i0,j0)`，只是 k 区间不同，其他 C 区域还没被计算。N 翻倍会把三重循环的每层迭代数都翻倍，算术量增长 `2³=8` 倍；矩阵存储量只增长 4 倍。
+
+</details>
+
+下一步把第 24 章的 Python 参考实现改成可处理非整除尺寸，再用实际工具观察 IR。将 T=3 用于 N=8 时，最后一块需要边界条件或掩码；本实验只提供可以整除的组合，避免把边界条件藏起来。

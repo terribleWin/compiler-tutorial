@@ -1,0 +1,9 @@
+{
+  "browser": "Microsoft Edge (Chromium), headless",
+  "viewports": [
+    "1440x1000",
+    "390x844"
+  ],
+  "passed": 43,
+  "errors": []
+}

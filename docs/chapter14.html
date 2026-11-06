@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>数据流分析 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="chapter14" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link " href="chapter09.html" ><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link active" href="chapter14.html" aria-current="page"><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link " href="chapter17.html" ><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link " href="chapter21.html" ><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link " href="source.html">配套源码与构建</a><a class="nav-link " href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link " href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><div class="article-eyebrow">CHAPTER 14 / 进阶</div><article class="prose"><h1 id="section-1">14 数据流分析：让信息沿控制流传播<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><h2 id="section-2">学习目标与前置知识<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><p>本章是三地址 IR 的扩展实验。先完成第 13 章，能准确列出每块的前驱、后继。你将学会活跃变量的含义、IN/OUT 方程、迭代与工作队列，并理解保守分析为什么宁可多保留一个值，也不能漏掉真正需要的值。</p>
+<h2 id="section-3">一个值什么时候活着<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><p>假设执行 <code>x=10</code> 后，在任何可能路径上都不会在下一次覆盖 x 之前读旧 x，那么这个值不必继续占寄存器。只要存在一条路径会在覆盖之前读取它，它在当前位置就活跃。活跃的是程序点上的已有值，不是“整个程序出现过这个名字”。</p>
+<p>这是反向问题：后面要读什么，决定前面要留什么。常量传播通常是正向问题：前面已经确定的信息影响后面。分析方向必须由问题本身决定，不能所有问题都套上“从入口走一遍”。</p>
+<h2 id="section-4">从块内部提取 USE 和 DEF<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><p>从上到下扫描块。DEF 包含块中定义的变量；USE 包含在本块首次定义之前读取的变量。对于 <code>x=x+1</code>，右侧先读旧 x，因此 x 同时属于 USE 与 DEF。对于 <code>x=1; y=x+2</code>，x 不属于 USE，因为入口无需提供旧 x。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>块内容</th>
+<th>USE</th>
+<th>DEF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>x=1; y=x+2</td>
+<td>{}</td>
+<td>{x,y}</td>
+</tr>
+<tr>
+<td>x=x+1</td>
+<td>{x}</td>
+<td>{x}</td>
+</tr>
+<tr>
+<td>print(y)</td>
+<td>{y}</td>
+<td>{}</td>
+</tr>
+</tbody></table></div>
+<p>这里先分析无指针、无别名的标量。增加数组、引用或可修改全局量的函数后，内存读写必须有额外建模，不能只比较变量名字。</p>
+<h2 id="section-5">把直觉写成方程<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><p>IN[B] 表示进入 B 时需要的旧值；OUT[B] 表示离开 B 时仍需保留的值。任意后继需要某值，B 离开时就要保留它，因此合并使用并集。</p>
+<pre><code class="language-text"><span class="code-line">OUT[B] = 所有后继 S 的 IN[S] 的并集</span><span class="code-line">IN[B]  = USE[B] ∪ (OUT[B] - DEF[B])</span></code></pre><p>第二式分两部分：本块开始就读取的值必须从入口提供；后继需要而本块没有重新定义的值也必须从入口带过来。若 B 覆盖了 x，后继需要的新 x 不能反过来要求入口旧 x 活跃。</p>
+<h2 id="section-6">亲手迭代一个循环<a class="heading-anchor" href="#section-6" aria-label="链接到本节">#</a></h2><p>图的边为 B0→B1、B1→B1、B1→B2：</p>
+<pre><code class="language-text"><span class="code-line">B0: x=1; y=2; jump B1</span><span class="code-line">B1: x=x+y; branch x&lt;10, B1, B2</span><span class="code-line">B2: print(x); return 0</span></code></pre><p>USE/DEF 分别为 B0:{} / {x,y}，B1:{x,y} / {x}，B2:{x} / {}。先把所有 IN/OUT 设为空，再按 B2、B1、B0 逆序更新。</p>
+<p>第一轮：B2 得 IN={x}；B1 根据后继当前结果得 OUT={x}、IN={x,y}；B0 得 OUT={x,y}、IN={}。第二轮：B1 自环把 y 传回，OUT 增加为 {x,y}，IN 不变；其他不变。第三轮完全不变，达到不动点。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>块</th>
+<th>最终 IN</th>
+<th>最终 OUT</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B0</td>
+<td>{}</td>
+<td>{x,y}</td>
+<td>两值都由 B0 提供</td>
+</tr>
+<tr>
+<td>B1</td>
+<td>{x,y}</td>
+<td>{x,y}</td>
+<td>y 还会在下一轮使用</td>
+</tr>
+<tr>
+<td>B2</td>
+<td>{x}</td>
+<td>{}</td>
+<td>打印后函数结束</td>
+</tr>
+</tbody></table></div>
+<p>只做一遍会漏掉回边带来的需求。不同更新顺序影响迭代轮数，但在这个分析中不影响最终最小不动点。表格中的每个集合都能用方程重新验证，不需要相信某段程序的输出。</p>
+<h2 id="section-7">从全量扫描到工作队列<a class="heading-anchor" href="#section-7" aria-label="链接到本节">#</a></h2><p>第一版反复扫描所有块直到集合稳定，最容易写对。之后改为工作队列：某块 IN 改变，通知它的前驱，因为前驱的 OUT 可能变化。方向是向前驱传播，不是后继。</p>
+<pre><code class="language-text"><span class="code-line">所有块入队</span><span class="code-line">当队列非空：</span><span class="code-line">    取 B</span><span class="code-line">    newOut = union(IN[S])，S 为 B 后继</span><span class="code-line">    newIn  = USE[B] union (newOut minus DEF[B])</span><span class="code-line">    保存 OUT[B] = newOut</span><span class="code-line">    若 newIn != IN[B]：</span><span class="code-line">        保存 IN[B] = newIn</span><span class="code-line">        将 B 的前驱入队</span></code></pre><p>即使 IN 没变也要保存新的 OUT，因为指令级扫描还要用它。用 inQueue 标记避免重复入队。集合最初使用 set 即可，正确后再换位向量，不要让容器优化先于算法正确性。</p>
+<h2 id="section-8">为什么终止，为什么保守<a class="heading-anchor" href="#section-8" aria-label="链接到本节">#</a></h2><p>函数只有 N 个变量，集合最多有 N 个元素。从空集出发，传递函数单调，信息只增加，所以不会无穷增长。更正式地说，它在有限幂集格上迭代到不动点。第一次接触这些术语时，先观察上例中的集合每轮怎样变化，再回头理解抽象定义。</p>
+<p>合并使用并集意味着：即使只有一条可能路径读取 x，也保留 x。这条路径可能实际不可达，但在没有证明之前必须考虑。多保留影响效率，漏保留可能改变结果。正确性与精度是不同指标：分析可保守而正确，也可看起来精确却遗漏真实路径。</p>
+<h2 id="section-9">指令级活跃与属性文法的连接<a class="heading-anchor" href="#section-9" aria-label="链接到本节">#</a></h2><p>从 OUT[B] 开始反向扫指令。对 <code>t=add a,b</code>，先从集合删去 t，再加入 a、b。例如指令后的集合为 {t,c}，之前就是 {a,b,c}。由此可生成活跃区间、干涉图，为第 17 章分配寄存器。</p>
+<p>数据流方程也能视为属性关系：一个块的 IN/OUT 是由邻居属性计算的值。普通 AST 属性常能沿树一次求出，而 CFG 有环，需要求解循环方程。循环属性文法研究的正是如何描述、调度这样的依赖。这个联系能把资料库中的 attributed-grammars 与优化章节接起来，但不能因此认为所有循环属性都必然快速可求；终止性仍需具体论证。</p>
+<h2 id="section-10">常见错误、练习与验收<a class="heading-anchor" href="#section-10" aria-label="链接到本节">#</a></h2><p>常见错误包括将所有出现过的变量都塞进 USE、把减去 DEF 写成并入 DEF、只跑一轮、IN 改变时通知后继、以及修改 CFG 后继续使用旧结果。</p>
+<p>练习一：B2 增加 print(y)，重新求解。练习二：B1 改成 <code>x=5; branch x&lt;10,B1,B2</code>，旧 x 是否还在 IN[B1]？练习三：说明块内扫描为什么必须先 kill 定义再 gen 使用。</p>
+<details><summary>参考答案与验收</summary>
+
+<p>第一题 B2 的 IN 变为 {x,y}，其余最终结果在本例不变。第二题旧 x 不再需要进入 B1，因为比较使用块内新 x；y 若也不再读取，就不应保留。第三题 <code>x=x+1</code> 必须保留入口旧 x，先删再加才能得到正确结果。验收要覆盖直线、菱形、自环和多出口，并验证坏 CFG 先被结构检查器拒绝。</p>
+</details>
+
+<h2 id="section-11">来源与后续<a class="heading-anchor" href="#section-11" aria-label="链接到本节">#</a></h2><p>本地 <code>compilers-papers-we-love/code-generation/ra/TOPLAS1999 Linear Scan Register Allocation.pdf</code> 第 3—6 页将活跃区间作为分配输入。属性文法专题可沿本地 <code>attributed-grammars/</code> 的题目继续阅读。下一章用 SSA 显式表达定义与使用，减少优化器的追踪负担。</p>
+</article><div class="chapter-complete"><label><input type="checkbox" id="mark-complete" data-chapter="chapter14"> 我已完成本章，并检查了验收条件</label><p>进度保存在此浏览器，可随时取消。</p></div><nav class="chapter-pagination" aria-label="章节翻页"><a href="chapter13.html"><small>← 上一章</small>三地址码与控制流图</a><a href="chapter15.html"><small>下一章 →</small>进入 SSA 世界</a></nav></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">学习目标与前置知识</a><a class="toc-depth-2" href="#section-3">一个值什么时候活着</a><a class="toc-depth-2" href="#section-4">从块内部提取 USE 和 DEF</a><a class="toc-depth-2" href="#section-5">把直觉写成方程</a><a class="toc-depth-2" href="#section-6">亲手迭代一个循环</a><a class="toc-depth-2" href="#section-7">从全量扫描到工作队列</a><a class="toc-depth-2" href="#section-8">为什么终止，为什么保守</a><a class="toc-depth-2" href="#section-9">指令级活跃与属性文法的连接</a><a class="toc-depth-2" href="#section-10">常见错误、练习与验收</a><a class="toc-depth-2" href="#section-11">来源与后续</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>

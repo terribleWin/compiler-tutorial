@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>术语速查 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="glossary" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link " href="chapter09.html" ><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link " href="chapter14.html" ><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link " href="chapter17.html" ><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link " href="chapter21.html" ><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link " href="source.html">配套源码与构建</a><a class="nav-link active" href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link " href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><div class="article-eyebrow">SPROUT / 学习工具</div><article class="prose"><h1 id="section-1">术语速查：先用一句话抓住含义<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><p>同一个“CFG”可能指上下文无关文法，也可能指控制流图。本书按章节语境区分；遇到缩写先问它描述的是语法结构，还是程序执行路径。</p>
+<h2 id="section-2">字符到结构<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>中文</th>
+<th>英文</th>
+<th>直观解释与阅读入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>词素</td>
+<td>lexeme</td>
+<td>源码里实际出现的一段拼写，如 <code>count</code></td>
+</tr>
+<tr>
+<td>词法单元</td>
+<td>token</td>
+<td>拼写加种类和位置，交给 Parser 的输入；<a href="chapter05.html">第 5 章</a></td>
+</tr>
+<tr>
+<td>最长匹配</td>
+<td>maximal munch</td>
+<td>在当前位置尽可能读出最长合法词素，如先识别 <code>&gt;=</code></td>
+</tr>
+<tr>
+<td>正则表达式</td>
+<td>regular expression</td>
+<td>描述标识符、整数等局部字符模式的规则</td>
+</tr>
+<tr>
+<td>非确定有限自动机</td>
+<td>NFA</td>
+<td>一次输入可能有多个候选状态，也可能走 ε 边</td>
+</tr>
+<tr>
+<td>确定有限自动机</td>
+<td>DFA</td>
+<td>每个状态对一个输入字符至多有一个后继；<a href="chapter06.html">第 6 章</a></td>
+</tr>
+<tr>
+<td>ε 闭包</td>
+<td>epsilon closure</td>
+<td>不消费字符，沿任意条 ε 边可到达的状态集合</td>
+</tr>
+<tr>
+<td>上下文无关文法</td>
+<td>context-free grammar</td>
+<td>用产生式定义括号、语句、表达式等递归结构</td>
+</tr>
+<tr>
+<td>终结符</td>
+<td>terminal</td>
+<td>文法中不能继续展开的基本符号，通常对应 Token</td>
+</tr>
+<tr>
+<td>非终结符</td>
+<td>nonterminal</td>
+<td>可以用产生式继续展开的语法类别</td>
+</tr>
+<tr>
+<td>二义性</td>
+<td>ambiguity</td>
+<td>同一输入具有两种不同语法树</td>
+</tr>
+<tr>
+<td>左递归</td>
+<td>left recursion</td>
+<td>展开后最左边又出现自身，朴素递归下降可能不消费输入就递归</td>
+</tr>
+<tr>
+<td>FIRST / FOLLOW</td>
+<td>first / follow set</td>
+<td>可作为开头的终结符集合，以及可跟在某非终结符后面的终结符集合</td>
+</tr>
+<tr>
+<td>移进 / 归约</td>
+<td>shift / reduce</td>
+<td>LR 中把输入压栈，或把产生式右部替换成左部；<a href="chapter08.html">第 8 章</a></td>
+</tr>
+<tr>
+<td>抽象语法树</td>
+<td>AST</td>
+<td>去掉括号等表面细节后保留程序结构的树；<a href="chapter09.html">第 9 章</a></td>
+</tr>
+<tr>
+<td>具体语法树</td>
+<td>CST</td>
+<td>更贴近文法和源码拼写的树，适合格式化与源码工具</td>
+</tr>
+<tr>
+<td>属性文法</td>
+<td>attribute grammar</td>
+<td>给语法节点附加计算规则，如类型从孩子汇总、环境向孩子传递</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-3">结构到含义<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>中文</th>
+<th>英文</th>
+<th>直观解释与阅读入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>绑定</td>
+<td>binding</td>
+<td>把某个名字的使用关联到唯一声明</td>
+</tr>
+<tr>
+<td>符号表</td>
+<td>symbol table</td>
+<td>保存名字、类型、位置、槽位等编译期信息</td>
+</tr>
+<tr>
+<td>作用域</td>
+<td>scope</td>
+<td>一条声明在哪段源码中可见</td>
+</tr>
+<tr>
+<td>遮蔽</td>
+<td>shadowing</td>
+<td>内层声明暂时盖住同名外层声明；<a href="chapter10.html">第 10 章</a></td>
+</tr>
+<tr>
+<td>静态语义</td>
+<td>static semantics</td>
+<td>运行之前可检查的约束，如变量已声明、类型匹配</td>
+</tr>
+<tr>
+<td>动态语义</td>
+<td>dynamic semantics</td>
+<td>程序实际执行时的含义，如求值顺序和异常</td>
+</tr>
+<tr>
+<td>左值</td>
+<td>lvalue</td>
+<td>可被写入的位置概念，本书主线赋值目标限为变量</td>
+</tr>
+<tr>
+<td>短路</td>
+<td>short-circuit evaluation</td>
+<td>左操作数已能决定结果时不计算右操作数</td>
+</tr>
+<tr>
+<td>未定义行为</td>
+<td>undefined behavior</td>
+<td>语言规范不再约束程序结果的情形；Sprout 用检查来避免整数溢出落入宿主 UB</td>
+</tr>
+<tr>
+<td>不变量</td>
+<td>invariant</td>
+<td>在某个阶段必须持续成立的条件，如每个变量使用都已绑定</td>
+</tr>
+<tr>
+<td>健全性</td>
+<td>soundness</td>
+<td>分析结果保证不会漏掉其声称能排除的错误；保守分析可产生额外拒绝</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-4">中间层与优化<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>中文</th>
+<th>英文</th>
+<th>直观解释与阅读入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>中间表示</td>
+<td>IR</td>
+<td>适合分析和变换、位于源码与目标代码之间的形式</td>
+</tr>
+<tr>
+<td>降低</td>
+<td>lowering</td>
+<td>把高级操作转换成更基础的操作，如把 <code>for</code> 改写成 <code>while</code></td>
+</tr>
+<tr>
+<td>字节码</td>
+<td>bytecode</td>
+<td>给虚拟机执行的指令，本书用内存指令数组表示；<a href="chapter11.html">第 11 章</a></td>
+</tr>
+<tr>
+<td>操作数栈</td>
+<td>operand stack</td>
+<td>保存中间计算值，不等于所有机器上的硬件栈</td>
+</tr>
+<tr>
+<td>调用帧</td>
+<td>call frame</td>
+<td>一次函数调用的参数、局部值和返回状态；<a href="chapter12.html">第 12 章</a></td>
+</tr>
+<tr>
+<td>三地址码</td>
+<td>three-address code</td>
+<td>一条常见计算写成 <code>t = a op b</code>，显式命名临时值</td>
+</tr>
+<tr>
+<td>基本块</td>
+<td>basic block</td>
+<td>单入口、内部没有分支跳出的顺序指令段</td>
+</tr>
+<tr>
+<td>控制流图</td>
+<td>control-flow graph</td>
+<td>基本块为点、可能跳转为边的图；<a href="chapter13.html">第 13 章</a></td>
+</tr>
+<tr>
+<td>数据流分析</td>
+<td>data-flow analysis</td>
+<td>沿 CFG 传播抽象信息，如变量是否活跃</td>
+</tr>
+<tr>
+<td>不动点</td>
+<td>fixed point</td>
+<td>再应用传递规则，信息已不再变化；<a href="chapter14.html">第 14 章</a></td>
+</tr>
+<tr>
+<td>支配</td>
+<td>dominance</td>
+<td>从入口到 B 的每条路径都经过 A，则 A 支配 B</td>
+</tr>
+<tr>
+<td>SSA</td>
+<td>static single assignment</td>
+<td>每个变量版本只定义一次；不同路径的值用 φ 合并</td>
+</tr>
+<tr>
+<td>φ 节点</td>
+<td>phi node</td>
+<td>根据实际进入的前驱边选择对应值；<a href="chapter15.html">第 15 章</a></td>
+</tr>
+<tr>
+<td>公共子表达式消除</td>
+<td>CSE</td>
+<td>在合法条件下重用之前计算的同一表达式</td>
+</tr>
+<tr>
+<td>死代码消除</td>
+<td>DCE</td>
+<td>删除结果不用、且没有可观察影响的计算</td>
+</tr>
+<tr>
+<td>pass</td>
+<td>compiler pass</td>
+<td>进行一次分析或变换的阶段；<a href="chapter16.html">第 16 章</a></td>
+</tr>
+<tr>
+<td>别名</td>
+<td>aliasing</td>
+<td>两个看似不同的引用可能指向同一存储位置</td>
+</tr>
+</tbody></table></div>
+<h2 id="section-5">后端与工程<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>中文</th>
+<th>英文</th>
+<th>直观解释与阅读入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>指令选择</td>
+<td>instruction selection</td>
+<td>把 IR 操作匹配到目标指令</td>
+</tr>
+<tr>
+<td>活跃区间</td>
+<td>live interval</td>
+<td>线性指令次序中一个值可能仍会使用的区段</td>
+</tr>
+<tr>
+<td>寄存器分配</td>
+<td>register allocation</td>
+<td>把大量虚拟值放入有限物理寄存器</td>
+</tr>
+<tr>
+<td>溢出到栈</td>
+<td>spill</td>
+<td>寄存器不足时把值保存到内存；<a href="chapter17.html">第 17 章</a></td>
+</tr>
+<tr>
+<td>ABI</td>
+<td>application binary interface</td>
+<td>函数参数、返回值、寄存器和数据布局等二进制约定</td>
+</tr>
+<tr>
+<td>重定位</td>
+<td>relocation</td>
+<td>链接器确定地址后修补引用位置</td>
+</tr>
+<tr>
+<td>垃圾回收</td>
+<td>garbage collection</td>
+<td>运行时回收不再能被程序访问的对象；<a href="chapter18.html">第 18 章</a></td>
+</tr>
+<tr>
+<td>AOT / JIT</td>
+<td>ahead-of-time / just-in-time</td>
+<td>提前编译和运行时即时编译</td>
+</tr>
+<tr>
+<td>目标三元组</td>
+<td>target triple</td>
+<td>工具链描述目标架构、供应商、操作系统/环境的标识；<a href="chapter19.html">第 19 章</a></td>
+</tr>
+<tr>
+<td>差分测试</td>
+<td>differential testing</td>
+<td>比较两个实现或两种编译路径的可观察行为</td>
+</tr>
+<tr>
+<td>蜕变测试</td>
+<td>metamorphic testing</td>
+<td>对有已知关系的输入做变换，检查输出关系</td>
+</tr>
+<tr>
+<td>模糊测试</td>
+<td>fuzzing</td>
+<td>自动生成或变异大量输入，发现崩溃与错误</td>
+</tr>
+<tr>
+<td>缩减</td>
+<td>reduction</td>
+<td>将失败程序缩成仍能复现的最小例子；<a href="chapter21.html">第 21 章</a></td>
+</tr>
+<tr>
+<td>自举</td>
+<td>bootstrapping</td>
+<td>用语言自身编写的编译器编译自己；<a href="chapter22.html">第 22 章</a></td>
+</tr>
+</tbody></table></div>
+<p>这些解释用于入门定位。精确定义、成立条件和反例应回到相应章节，不要仅凭一个术语名称决定优化或实现。</p>
+</article></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">字符到结构</a><a class="toc-depth-2" href="#section-3">结构到含义</a><a class="toc-depth-2" href="#section-4">中间层与优化</a><a class="toc-depth-2" href="#section-5">后端与工程</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>

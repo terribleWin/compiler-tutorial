@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>AST 与友好的错误 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="chapter09" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link active" href="chapter09.html" aria-current="page"><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link " href="chapter14.html" ><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link " href="chapter17.html" ><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link " href="chapter21.html" ><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link " href="source.html">配套源码与构建</a><a class="nav-link " href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link " href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><div class="article-eyebrow">CHAPTER 09 / 前端</div><article class="prose"><h1 id="section-1">第09章 AST、遍历与让人看懂的诊断<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><h2 id="section-2">本章目标与前置<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><p>前置是会解析表达式和块。本章要设计一份能长期支撑后续阶段的数据结构，并建立足够清晰的诊断。学完后，你应能解释语法树与抽象语法树的区别，选择合理的节点表示，写一次递归遍历，并让错误指回准确的源位置。</p>
+<p>AST 是前后端之间的重要契约。设计得当，名字解析、类型检查和代码生成可以各自沿同一棵树工作；设计混乱，则每个阶段都要重新理解源字符串。</p>
+<h2 id="section-3">9.1 为什么要“抽象”<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><p>完整语法树会保存文法中的非终结符层级、括号和分号等结构。例如 <code>1 + (2 * 3)</code> 可能经过 expression、addition、multiply、primary 等很多层。AST 保留语义需要的结构：一个加法节点，左边是1，右边是乘法节点2与3。括号的作用已经体现为分组，无需一定作为单独节点存在。</p>
+<pre><code class="language-text"><span class="code-line">Add</span><span class="code-line">  Integer 1</span><span class="code-line">  Multiply</span><span class="code-line">    Integer 2</span><span class="code-line">    Integer 3</span></code></pre><p>抽象不等于随意丢数据。如果你要做格式化器、保留注释的重构工具或逐字重建源代码，完整语法树或额外 Token/Trivia 信息可能更合适。本课程的第一任务是检查并编译程序，因此主线 AST 优先保存语义结构与源码位置。</p>
+<h2 id="section-4">9.2 节点至少保存什么<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><p>整数节点保存值与来源；变量节点保存名字，解析后还可保存符号编号；二元节点保存运算符、左右孩子与范围；调用节点保存函数名与实参列表；语句节点保存相应表达式或子块。函数节点保存签名与函数体，程序节点保存函数集合。</p>
+<p>源码范围可以表示成半开区间 <code>[begin,end)</code>：begin 指向第一个字节，end 指向最后一个字节的后一位。半开区间的长度直接是 <code>end - begin</code>，空范围也有统一表示。将范围与源文件身份分开保存，后面处理多个文件时就不必把每个节点的文件名字符串重复存很多次。</p>
+<pre><code class="language-cpp"><span class="code-line"><span class="hljs-comment">// 教学片段：标签结构体的一种组织方式。</span></span><span class="code-line"><span class="hljs-keyword">enum class</span> <span class="hljs-title class_">ExprKind</span> { Integer, Boolean, Name, Unary, Binary, Call };</span><span class="code-line"></span><span class="code-line"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">SourceRange</span> {</span><span class="code-line">    std::<span class="hljs-type">size_t</span> begin;</span><span class="code-line">    std::<span class="hljs-type">size_t</span> end;</span><span class="code-line">};</span><span class="code-line"></span><span class="code-line"><span class="hljs-keyword">struct</span> <span class="hljs-title class_">Expr</span> {</span><span class="code-line">    ExprKind kind;</span><span class="code-line">    SourceRange range;</span><span class="code-line">    std::string text;</span><span class="code-line">    std::<span class="hljs-type">int32_t</span> integerValue;</span><span class="code-line">    std::vector&lt;std::unique_ptr&lt;Expr&gt; &gt; children;</span><span class="code-line">};</span></code></pre><p>这是表示方案示例，使用前要补齐构造与字段初始化。<code>text</code> 对某些节点是名字，对另一些节点可能是运算符，因此需要清楚的种类约束。一个巨大的“万能节点”若没有不变量检查，会让非法字段组合难以发现。</p>
+<h2 id="section-5">9.3 三种常见表示方案<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>表示</th>
+<th>优点</th>
+<th>需要承担的成本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>enum class</code> 加结构体字段</td>
+<td>C++11 直观、分派集中、容易输出</td>
+<td>要维护字段与种类对应关系</td>
+</tr>
+<tr>
+<td>基类加派生节点</td>
+<td>每种节点字段清楚，能用虚函数访问</td>
+<td>虚析构、指针与访问器代码较多</td>
+</tr>
+<tr>
+<td>C++17 <code>variant</code></td>
+<td>显式封闭的节点集合，访问时可检查覆盖</td>
+<td>提高最低标准，递归所有权仍需设计</td>
+</tr>
+</tbody></table></div>
+<p>没有一种方案能免去语义设计。Visitor 的价值在于组织操作与节点类型的关系，而不是给所有函数换一个设计模式名字。C++11 主线可以用 <code>switch</code> 分派或经典 Visitor；C++17 的 <code>std::visit</code> 是可选写法，不应直接放进四标准共用源码。</p>
+<p>拥有孩子的指针应表达清楚的所有权。父节点唯一拥有孩子时，<code>unique_ptr</code> 很合适。符号表里指向声明的借用指针不应该再拥有同一个节点；否则会重复释放。也可以给声明分配整数 ID，后续统一查询，避免把容器重分配后可能失效的指针到处保存。</p>
+<h2 id="section-6">9.4 先实现一个不会改变树的遍历<a class="heading-anchor" href="#section-6" aria-label="链接到本节">#</a></h2><p>最容易验证的 AST 操作是输出树。递归地打印节点种类与缩进，再访问孩子。不要在第一次遍历中同时做类型推导、常量折叠和代码生成；先确认你访问到了正确的所有节点。</p>
+<pre><code class="language-text"><span class="code-line">dump(node, depth):</span><span class="code-line">    输出 depth 层缩进、节点种类、关键属性</span><span class="code-line">    对每个孩子:</span><span class="code-line">        dump(child, depth + 1)</span></code></pre><p>为 <code>f(1+2, 3*4)</code> 输出树时，必须保留实参顺序。对于 <code>if</code> 节点，应能分清条件、then块与else块，而不是只列三个没有角色的孩子。实际 dump 格式可以使用命名字段，让人读到错误树时能迅速定位是哪一类结构出错。</p>
+<p>AST 输出不仅是教学图片，也是调试工具。发现 <code>1+2*3</code> 结果错误时，若树已显示乘法在上、加法在下，应先修复解析；若树正确，则继续检查类型、字节码和执行。把阶段结果变得可见，可以避免“每次从头猜”。</p>
+<h2 id="section-7">9.5 递归遍历中的返回值与上下文<a class="heading-anchor" href="#section-7" aria-label="链接到本节">#</a></h2><p>不同操作需要不同的信息流。打印函数向下传递缩进深度；类型检查向下传递符号环境，并从孩子向上返回类型；代码生成向下传递当前函数和目标代码缓冲，最终积累指令。这与属性文法中的继承信息、综合信息有自然联系。</p>
+<p>不要把所有上下文塞进一批全局变量。处理第二个函数时忘记清空第一个函数的状态，是初学实现中很常见的错误。可以为每个阶段创建对象，将只在一个阶段有效的字段放进去，再为每个函数创建局部上下文。明确状态寿命，比反复“记得清零”可靠。</p>
+<p>如果语言允许极端深度的括号或表达式，递归 AST 遍历和析构都可能占用较深宿主栈。教学工具应有输入或深度保护。工业实现还可能使用显式工作栈、arena 分配和迭代遍历。先理解正确性与所有权，再考虑这些工程优化。</p>
+<h2 id="section-8">9.6 诊断由位置、原因和语境组成<a class="heading-anchor" href="#section-8" aria-label="链接到本节">#</a></h2><p>看下面的错误程序：</p>
+<pre><code class="language-sprout"><span class="code-line"><span class="hljs-keyword">fn</span> main() -&gt; <span class="hljs-type">int</span> {</span><span class="code-line">    <span class="hljs-keyword">let</span> total = <span class="hljs-number">1</span>;</span><span class="code-line">    <span class="hljs-built_in">print</span>(totel);</span><span class="code-line">    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;</span><span class="code-line">}</span></code></pre><p>好的诊断能够说明 <code>totel</code> 在第3行附近没有声明，并指出它的具体位置。若界面支持源代码片段，可以显示该行与下划线。建议格式如下，具体工具排版可能不同：</p>
+<pre><code class="language-text"><span class="code-line">example.spr:3:11: error: unknown variable &#x27;totel&#x27;</span><span class="code-line">    print(totel);</span><span class="code-line">          ^^^^^</span></code></pre><p>为什么在 AST 中保存位置？因为名字解析时，原始 Token 游标早已读到文件末尾；若节点只保存名字，就无法可靠知道这一次使用来自哪里。同一个名字可以出现很多次，仅搜索文本不能确定正确位置。</p>
+<p>诊断信息应以用户能行动的事实为中心：“变量未声明”“调用需要2个参数但给了1个”“条件需要 bool，实际为 int”。不要向初学者暴露无关的 C++ 类型名、内部指针或底层异常栈。开发者可以另开调试日志，但不应把日志当作语言错误说明。</p>
+<h2 id="section-9">9.7 恢复与错误节点的取舍<a class="heading-anchor" href="#section-9" aria-label="链接到本节">#</a></h2><p>第一版在首个错误处停止，能显著简化不变量：只要后续阶段收到 AST，就认为结构完整。若解析器想报告多个错误，可插入显式 Error 节点，让后续阶段知道它不是真实表达式；或者恢复后继续收集错误，但禁止整个程序进入代码生成。</p>
+<p>最危险的做法是遇到错误便返回一个“整数0节点”，不记录失败，然后继续生成并执行。这会把错误程序伪装成合法程序，输出一个毫无依据的结果。恢复的目标是给出更多有用诊断，不是制造一个看似能运行的替代程序。</p>
+<p>诊断稳定性也影响测试。测试应该检查错误种类、关键名字和必要位置，不必对每个标点都做精确匹配。否则稍微改善措辞就会破坏大量测试，迫使你保留糟糕表达。</p>
+<h2 id="section-10">9.8 实验与练习<a class="heading-anchor" href="#section-10" aria-label="链接到本节">#</a></h2><p>运行 <code>./sprout --ast</code> 检查带有函数、if、while和调用的程序。数一数有多少个变量使用节点，再与源代码逐个对应。随后只把一个括号位置改动，观察树中究竟哪条父子关系变化。这个实验训练你把源码表面顺序与树形结构分开理解。</p>
+<p>练习一：如果常量折叠把 <code>2 * 3</code> 变成6，新节点的范围应该取哪个位置？</p>
+<details>
+<summary>查看答案</summary>
+
+<p>合理选择是保留原 <code>2 * 3</code> 整个表达式的范围，或记录一个明确的来源关系。不能随意把6当作来自文件中某个不存在的字符。优化后仍需能够解释错误或调试位置。</p>
+</details>
+
+<p>练习二：符号表保存 AST 节点的原始指针，是否一定错误？</p>
+<details>
+<summary>查看答案</summary>
+
+<p>不一定。若指针只借用节点、节点地址稳定，并且 AST 的寿命覆盖符号表使用期，可以安全。但必须明确这些条件；节点销毁、移动存储或容器重分配可能使指针失效。整数符号 ID 往往更容易统一管理。</p>
+</details>
+
+<p>练习三：设计一条同时涉及两个位置的诊断。</p>
+<details>
+<summary>查看答案</summary>
+
+<p>例如重复声明：主错误指向第二次 <code>let x</code>，附注指向第一次声明。调用参数类型不匹配也可以主指实参，再附注函数签名位置。多位置诊断能解释两个约束来源之间的关系。</p>
+</details>
+
+<p>本章验收：AST 保留语义结构和来源，遍历顺序明确，所有权没有重复拥有，错误程序不会靠伪造节点进入执行。下一章把树中的名字和运算连接到静态规则。</p>
+<h2 id="section-11">来源与延伸阅读<a class="heading-anchor" href="#section-11" aria-label="链接到本节">#</a></h2><p>本地资料定位：<code>compilers-resources/material/attributed-grammars/Attributed Grammars (cs.uiowa.edu).pdf</code> 前3页关于信息沿树传递的引入；<code>compilers-papers-we-love/parsing/</code> 中的错误诊断论文属于后续导读方向，本章不声称已逐篇研读。</p>
+<p>公开一手资料：<a href="https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl02.html">LLVM Kaleidoscope：AST</a>；<a href="https://clang.llvm.org/diagnostics.html">Clang 诊断说明</a>；<a href="https://craftinginterpreters.com/representing-code.html">Robert Nystrom：Representing Code</a>。本章给出的诊断和数据结构为独立教学设计。</p>
+</article><div class="chapter-complete"><label><input type="checkbox" id="mark-complete" data-chapter="chapter09"> 我已完成本章，并检查了验收条件</label><p>进度保存在此浏览器，可随时取消。</p></div><nav class="chapter-pagination" aria-label="章节翻页"><a href="chapter08.html"><small>← 上一章</small>理解 LL 与 LR</a><a href="chapter10.html"><small>下一章 →</small>名字、作用域与类型</a></nav></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">本章目标与前置</a><a class="toc-depth-2" href="#section-3">9.1 为什么要“抽象”</a><a class="toc-depth-2" href="#section-4">9.2 节点至少保存什么</a><a class="toc-depth-2" href="#section-5">9.3 三种常见表示方案</a><a class="toc-depth-2" href="#section-6">9.4 先实现一个不会改变树的遍历</a><a class="toc-depth-2" href="#section-7">9.5 递归遍历中的返回值与上下文</a><a class="toc-depth-2" href="#section-8">9.6 诊断由位置、原因和语境组成</a><a class="toc-depth-2" href="#section-9">9.7 恢复与错误节点的取舍</a><a class="toc-depth-2" href="#section-10">9.8 实验与练习</a><a class="toc-depth-2" href="#section-11">来源与延伸阅读</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>

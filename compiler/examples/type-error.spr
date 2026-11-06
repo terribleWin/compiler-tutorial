@@ -1,0 +1,6 @@
+// Expected: a static error; the program is never executed.
+fn main() -> int {
+    let count = 1;
+    count = true;
+    return 0;
+}

@@ -1,0 +1,16 @@
+// Functions can refer to functions defined later, including themselves.
+fn fib(n: int) -> int {
+    if (n < 2) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+fn main() -> int {
+    let n = 0;
+    while (n < 10) {
+        print(fib(n));
+        n = n + 1;
+    }
+    return 0;
+}

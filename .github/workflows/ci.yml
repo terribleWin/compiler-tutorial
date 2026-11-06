@@ -1,0 +1,42 @@
+name: Verify course and compiler
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compiler:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        standard: [11, 14, 17, 20]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build strictly
+        run: g++ -std=c++${{ matrix.standard }} -Wall -Wextra -Wpedantic -Werror compiler/src/sprout.cpp -o sprout
+      - name: Verify compiler behavior
+        run: python3 compiler/tests/run_tests.py ./sprout
+      - name: Verify generated native programs
+        if: matrix.standard == 11
+        run: python3 compiler/tests/run_tests.py ./sprout --native g++
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: python3 tools/package.py
+      - run: npm run check
+      - name: Verify modern compiler experiments
+        run: |
+          mkdir -p work/modern
+          cd work/modern
+          python3 ../../compiler/experiments/ai_pipeline_demo.py
+          python3 ../../compiler/experiments/tensor_schedule_demo.py
+          python3 ../../compiler/experiments/ai_tuning_demo.py --output tuning-result.json

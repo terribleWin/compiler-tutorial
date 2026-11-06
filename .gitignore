@@ -1,0 +1,8 @@
+node_modules/
+work/
+compiler/build*/
+*.exe
+*.o
+__pycache__/
+verification/browser/
+lab23-artifacts/

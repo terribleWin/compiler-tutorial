@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="从零用 C++11/14/17/20 构建 Sprout 编译器：中文理论、可运行源码、练习与交互实验。"><title>Sprout 完整语言规范 · 从零造编译器</title><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script></head>
+<body data-page="spec" data-chapters="25"><a class="skip" href="#main">跳到正文</a><header class="topbar"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="展开课程目录" aria-expanded="false">☰</button><a class="brand" href="index.html"><span class="brand-mark">S<span>↗</span></span><span>从零造编译器<small>THE SPROUT COMPILER BOOK</small></span></a><nav class="toplinks" aria-label="站点导航"><a href="roadmap.html">学习路线</a><a href="lab.html">交互实验</a><a href="source.html">配套源码 <span>↗</span></a></nav><button class="icon-button" id="theme-toggle" aria-label="切换深浅配色">◐</button></header>
+<aside class="sidebar" id="sidebar" aria-label="课程目录"><div class="side-intro"><span class="tiny">一本可以动手的编译器书</span><a href="index.html">课程总览 <span>↗</span></a></div><label class="search-label" for="search">搜索全书 <kbd>/</kbd></label><input id="search" type="search" placeholder="例如：作用域、SSA、递归" autocomplete="off"><div class="search-results" id="search-results" aria-live="polite" hidden></div><div class="progress-label"><span>我的学习进度</span><span id="progress-count">0 / 25</span></div><div class="progress-track"><i id="progress-bar"></i></div><nav><div class="nav-group">起步</div><a class="nav-link " href="chapter01.html" ><span>01</span>从一行源代码出发</a><a class="nav-link " href="chapter02.html" ><span>02</span>够用的 C++ 与四个标准</a><a class="nav-link " href="chapter03.html" ><span>03</span>搭好工作台</a><div class="nav-group">前端</div><a class="nav-link " href="chapter04.html" ><span>04</span>设计 Sprout 语言</a><a class="nav-link " href="chapter05.html" ><span>05</span>词法分析：识别单词</a><a class="nav-link " href="chapter06.html" ><span>06</span>自动机：扫描器背后的理论</a><a class="nav-link " href="chapter07.html" ><span>07</span>递归下降与表达式</a><a class="nav-link " href="chapter08.html" ><span>08</span>理解 LL 与 LR</a><a class="nav-link " href="chapter09.html" ><span>09</span>AST 与友好的错误</a><a class="nav-link " href="chapter10.html" ><span>10</span>名字、作用域与类型</a><div class="nav-group">运行</div><a class="nav-link " href="chapter11.html" ><span>11</span>编译到栈式字节码</a><a class="nav-link " href="chapter12.html" ><span>12</span>让程序真正跑起来</a><div class="nav-group">进阶</div><a class="nav-link " href="chapter13.html" ><span>13</span>三地址码与控制流图</a><a class="nav-link " href="chapter14.html" ><span>14</span>数据流分析</a><a class="nav-link " href="chapter15.html" ><span>15</span>进入 SSA 世界</a><a class="nav-link " href="chapter16.html" ><span>16</span>优化必须保持语义</a><div class="nav-group">后端</div><a class="nav-link " href="chapter17.html" ><span>17</span>走向本机代码</a><a class="nav-link " href="chapter18.html" ><span>18</span>ABI、链接与运行时</a><a class="nav-link " href="chapter19.html" ><span>19</span>连接 LLVM 与 RISC-V</a><div class="nav-group">工程</div><a class="nav-link " href="chapter20.html" ><span>20</span>按里程碑完成项目</a><a class="nav-link " href="chapter21.html" ><span>21</span>证明它确实能工作</a><div class="nav-group">远航</div><a class="nav-link " href="chapter22.html" ><span>22</span>扩展你的语言</a><div class="nav-group">AI 专题</div><a class="nav-link " href="chapter23.html" ><span>23</span>AI 编译链：从模型到部署</a><a class="nav-link " href="chapter24.html" ><span>24</span>AI 编译器与张量调度</a><a class="nav-link " href="chapter25.html" ><span>25</span>AI 辅助优化与验证</a><div class="nav-group">工具与附录</div><a class="nav-link " href="roadmap.html">学习路线</a><a class="nav-link " href="compatibility.html">C++ 标准兼容手册</a><a class="nav-link " href="lab.html">交互实验室</a><a class="nav-link " href="source.html">配套源码与构建</a><a class="nav-link " href="glossary.html">术语速查</a><a class="nav-link " href="references.html">资料与阅读记录</a><a class="nav-link " href="coverage.html">主题覆盖地图</a><a class="nav-link " href="tensor-lab.html">张量分块实验室</a></nav><p class="side-footer">C++11 为共同基线<br>中文 · 开源 · 按实践推进</p></aside>
+<div class="page-wrap"><main id="main" tabindex="-1" class="article-page"><article class="prose"><h1 id="section-1">Sprout 语言与工具契约 · v1<a class="heading-anchor" href="#section-1" aria-label="链接到本节">#</a></h1><p>这份规范描述随教学网站交付、已经实现的语言。主线实现是 <code>src/sprout.cpp</code>。它不是 C++ 编译器，也不是完整的 SysY 实现：C++ 是编写编译器所用的宿主语言，Sprout 才是被编译的源语言。</p>
+<h2 id="section-2">1. 最小完整程序<a class="heading-anchor" href="#section-2" aria-label="链接到本节">#</a></h2><pre><code class="language-text"><span class="code-line">fn main() -&gt; int {</span><span class="code-line">    print(1 + 2 * 3);</span><span class="code-line">    return 0;</span><span class="code-line">}</span></code></pre><p>输出 <code>7</code>，换行。文件建议使用 <code>.spr</code> 后缀，保存为无 BOM 的 UTF-8；非注释文本使用 ASCII 字符。扩展名不参与语法判断。每个程序必须定义且只能定义一个 <code>fn main() -&gt; int</code>，不接受参数。正常返回时主函数的返回值被忽略，宿主进程返回 0。</p>
+<h2 id="section-3">2. 命令行<a class="heading-anchor" href="#section-3" aria-label="链接到本节">#</a></h2><pre><code class="language-text"><span class="code-line">sprout file.spr                    # 默认：编译到内存字节码，然后执行</span><span class="code-line">sprout --run file.spr              # 与默认相同</span><span class="code-line">sprout --tokens file.spr           # 仅词法扫描；行:列、种类、拼写</span><span class="code-line">sprout --ast file.spr              # 解析并完成静态检查后打印 AST</span><span class="code-line">sprout --bytecode file.spr         # 打印各函数的字节码</span><span class="code-line">sprout --check file.spr            # 静态检查，通过时输出 OK</span><span class="code-line">sprout --emit-cpp file.spr         # 独立 C++11 目标源码写到标准输出</span><span class="code-line">sprout --help</span></code></pre><p>没有参数或参数数目不正确返回 2；<code>--help</code> 返回 0。成功执行、展示或检查返回 0。词法、语法、语义、运行错误返回 1，错误写到标准错误流；无法打开文件、未知双参数选项返回 2。<code>--tokens</code> 只验证词法，不保证语法正确。其余观察模式均要求静态检查通过。AST、字节码文本供教学观察，格式不作为稳定的机器接口。</p>
+<h2 id="section-4">3. 词法<a class="heading-anchor" href="#section-4" aria-label="链接到本节">#</a></h2><ul>
+<li>标识符：<code>[A-Za-z_][A-Za-z_0-9]*</code>，大小写敏感；关键字不能作标识符。</li>
+<li>关键字：<code>fn let if else while return print int bool true false</code>。</li>
+<li>整数字面量：十进制 <code>[0-9]+</code>，<code>010</code> 仍是十进制 10。无十六进制、浮点数、字符串或字符字面量。</li>
+<li>空白：空格、Tab、CR、LF。Tab 的列计数为一个字符；CRLF 换行只增加一次行号。</li>
+<li>注释：<code>//</code> 到行尾，可包含中文；不支持 <code>/* ... */</code> 块注释。</li>
+<li>分隔符：<code>( ) { } : ; ,</code>。运算符优先匹配两个字符，如 <code>&lt;=</code>、<code>!=</code>、<code>-&gt;</code>。</li>
+<li>位置从第 1 行、第 1 列开始。未知字符立即拒绝，不做词法错误恢复。</li>
+</ul>
+<p><code>int</code> 取值范围为 -2147483648 到 2147483647。<code>-2147483648</code> 被专门接受；<code>2147483648</code> 单独出现或 <code>-(2147483648)</code> 均拒绝。在实现中，一元负号直接跟数字时会合并为一个带符号数值节点；因此 AST 不必逐字保留源程序拼写。</p>
+<h2 id="section-5">4. 文法<a class="heading-anchor" href="#section-5" aria-label="链接到本节">#</a></h2><p>下面采用 EBNF：<code>{ X }</code> 表示重复零次或多次，<code>[ X ]</code> 表示可选，带引号的是实际字符。</p>
+<pre><code class="language-text"><span class="code-line">program     = { function } EOF ;</span><span class="code-line">function    = &quot;fn&quot; identifier &quot;(&quot; [ parameters ] &quot;)&quot; &quot;-&gt;&quot; type block ;</span><span class="code-line">parameters  = parameter { &quot;,&quot; parameter } ;</span><span class="code-line">parameter   = identifier &quot;:&quot; type ;</span><span class="code-line">type        = &quot;int&quot; | &quot;bool&quot; ;</span><span class="code-line">block       = &quot;{&quot; { statement } &quot;}&quot; ;</span><span class="code-line">statement   = block</span><span class="code-line">            | &quot;let&quot; identifier &quot;=&quot; expression &quot;;&quot;</span><span class="code-line">            | identifier &quot;=&quot; expression &quot;;&quot;</span><span class="code-line">            | &quot;print&quot; &quot;(&quot; expression &quot;)&quot; &quot;;&quot;</span><span class="code-line">            | &quot;if&quot; &quot;(&quot; expression &quot;)&quot; block [ &quot;else&quot; block ]</span><span class="code-line">            | &quot;while&quot; &quot;(&quot; expression &quot;)&quot; block</span><span class="code-line">            | &quot;return&quot; expression &quot;;&quot;</span><span class="code-line">            | expression &quot;;&quot; ;</span><span class="code-line">expression  = logicalOr ;</span><span class="code-line">logicalOr   = logicalAnd { &quot;||&quot; logicalAnd } ;</span><span class="code-line">logicalAnd  = equality { &quot;&amp;&amp;&quot; equality } ;</span><span class="code-line">equality    = comparison { (&quot;==&quot; | &quot;!=&quot;) comparison } ;</span><span class="code-line">comparison  = additive { (&quot;&lt;&quot; | &quot;&lt;=&quot; | &quot;&gt;&quot; | &quot;&gt;=&quot;) additive } ;</span><span class="code-line">additive    = product { (&quot;+&quot; | &quot;-&quot;) product } ;</span><span class="code-line">product     = unary { (&quot;*&quot; | &quot;/&quot; | &quot;%&quot;) unary } ;</span><span class="code-line">unary       = (&quot;-&quot; | &quot;!&quot;) unary | primary ;</span><span class="code-line">primary     = integer | &quot;true&quot; | &quot;false&quot; | identifier</span><span class="code-line">            | identifier &quot;(&quot; [ arguments ] &quot;)&quot;</span><span class="code-line">            | &quot;(&quot; expression &quot;)&quot; ;</span><span class="code-line">arguments   = expression { &quot;,&quot; expression } ;</span></code></pre><p>函数只允许在顶层定义，不能嵌套；没有全局变量。<code>if</code>、<code>while</code> 必须写圆括号和花括号。<code>else if</code> 不是简写语法，应写为 <code>else { if (...) { ... } }</code>。不允许空语句 <code>;</code>、空 <code>return;</code>、尾逗号或 <code>let x: int = ...</code> 类型标注。</p>
+<h2 id="section-6">5. 类型、名字和控制流<a class="heading-anchor" href="#section-6" aria-label="链接到本节">#</a></h2><p><code>int</code> 和 <code>bool</code> 是不同类型，不隐式转换。<code>print</code> 接受两种类型，分别输出十进制整数或 <code>true</code> / <code>false</code>，每次换行。没有 <code>void</code>，所有函数都必须返回声明的类型。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>表达式</th>
+<th>操作数</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>+ - * / %</code>，一元 <code>-</code></td>
+<td>int</td>
+<td>int</td>
+</tr>
+<tr>
+<td><code>&lt; &lt;= &gt; &gt;=</code></td>
+<td>int、int</td>
+<td>bool</td>
+</tr>
+<tr>
+<td><code>== !=</code></td>
+<td>两个相同类型的值</td>
+<td>bool</td>
+</tr>
+<tr>
+<td><code>!</code>、<code>&amp;&amp;</code>、`</td>
+<td></td>
+<td>`</td>
+</tr>
+<tr>
+<td><code>if</code>、<code>while</code> 条件</td>
+<td>bool</td>
+<td>控制流</td>
+</tr>
+</tbody></table></div>
+<p>所有二元运算符都左结合。<code>1 &lt; 2 &lt; 3</code> 会先得到 bool 再拿它与 int 比较，因而类型错误；应使用 <code>(1 &lt; 2) &amp;&amp; (2 &lt; 3)</code>。赋值是语句，不能嵌入表达式。</p>
+<p>每个函数拥有独立的局部变量帧。<code>let</code> 根据初始化表达式推断类型，必须初始化；之后可以赋同类型新值。同一个块中不能重复声明名字。函数参数与函数最外层花括号处于同一作用域，所以 <code>fn f(x: int) -&gt; int { let x = 1; ... }</code> 会拒绝。内层块可遮蔽外层名字。</p>
+<pre><code class="language-text"><span class="code-line">fn main() -&gt; int {</span><span class="code-line">    let x = 10;</span><span class="code-line">    {</span><span class="code-line">        let x = x + 1; // 先分析右侧，读取外层 x；之后引入内层 x</span><span class="code-line">        print(x);      // 11</span><span class="code-line">    }</span><span class="code-line">    print(x);          // 10</span><span class="code-line">    return 0;</span><span class="code-line">}</span></code></pre><p>函数签名先集中登记，再检查函数体，支持前向调用、直接递归和互递归。函数和局部变量使用分开的名字空间，<code>f(...)</code> 始终按函数名解析。没有函数值、闭包、指针、引用、数组、结构体或模块。</p>
+<p>静态返回检查采用保守规则：<code>return</code> 保证返回；<code>if/else</code> 两支都保证返回时整个语句保证返回；块中某个语句保证返回时整个块保证返回；<code>while</code> 永远不被当作保证返回，即使条件是 <code>true</code>。因此 <code>while (true) { return 1; }</code> 后面还需要一个静态可见的 <code>return</code>。不可达语句仍接受静态检查；本版本不报告不可达代码警告，也不进行常量条件推理。</p>
+<h2 id="section-7">6. 运行语义<a class="heading-anchor" href="#section-7" aria-label="链接到本节">#</a></h2><ul>
+<li>所有表达式和函数实参按从左到右的顺序求值。</li>
+<li><code>&amp;&amp;</code> 左侧为 false 时跳过右侧；<code>||</code> 左侧为 true 时跳过右侧。被跳过的表达式仍必须通过静态检查。</li>
+<li>整数加减乘、一元负号、除法先使用足够宽的宿主 <code>int64_t</code> 计算，再检查 int32 范围。越界立即报错，不回绕，不触发宿主 C++ 有符号溢出。</li>
+<li><code>/</code>、<code>%</code> 的零除数报错。整数除法向零截断，例如 <code>-7 / 3 == -2</code>；余数与被除数同号，例如 <code>-7 % 3 == -1</code>。</li>
+<li><code>-2147483648 / -1</code> 报溢出；<code>-2147483648 % -1</code> 得到 0。</li>
+<li>函数参数按值传递。局部变量和临时操作数栈在返回时释放。</li>
+<li>表达式语句计算结果后丢弃；<code>return</code> 立即结束当前函数。</li>
+</ul>
+<p>为了让错误示例能安全结束，本版本限制源文件不超过 1 MiB、解析器活动嵌套层数不超过 256、表达式 AST 高度不超过 128、函数调用深度不超过 256。字节码 VM 在整个程序累计执行超过 1000000 条指令时报错；生成的 C++ 后端在语句和循环检查点计数，同样采用 1000000 上限。<strong>两个后端检查点粒度不同，因此接近资源上限的程序可能在不同位置停止；资源限制不属于跨后端等价承诺。</strong> 单个源语法嵌套会占多个解析函数层数，256 不是允许 256 对括号的承诺。</p>
+<h2 id="section-8">7. 字节码与调用约定<a class="heading-anchor" href="#section-8" aria-label="链接到本节">#</a></h2><p>每个函数独立拥有一段指令、参数数和局部变量槽位数。地址是该函数内的指令下标。编译期间每个声明分配一个槽位，退出作用域后不复用槽位，便于观察；循环再次执行相同声明时覆盖原槽位。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>指令</th>
+<th>操作数栈变化与行为</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PUSH n</code></td>
+<td>压入整数或用 0/1 表示的 bool</td>
+</tr>
+<tr>
+<td><code>LOAD slot</code></td>
+<td>读取当前帧局部值并压栈</td>
+</tr>
+<tr>
+<td><code>STORE slot</code></td>
+<td>弹出一个值，保存到当前帧</td>
+</tr>
+<tr>
+<td><code>POP</code></td>
+<td>丢弃栈顶</td>
+</tr>
+<tr>
+<td><code>NEG</code>、<code>NOT</code></td>
+<td>弹出一元操作数，压回结果</td>
+</tr>
+<tr>
+<td><code>+ - * / % &lt; &lt;= &gt; &gt;= == !=</code></td>
+<td>先弹右值，再弹左值，压回结果</td>
+</tr>
+<tr>
+<td><code>JMP address</code></td>
+<td>无条件跳转</td>
+</tr>
+<tr>
+<td><code>JZ address</code></td>
+<td>弹出 bool；为 false 时跳转</td>
+</tr>
+<tr>
+<td><code>CALL function</code></td>
+<td>按签名弹出 N 个参数；建立帧；返回值压回调用者栈</td>
+</tr>
+<tr>
+<td><code>RET</code></td>
+<td>弹出结果并返回调用者</td>
+</tr>
+<tr>
+<td><code>PRINT_INT</code>、<code>PRINT_BOOL</code></td>
+<td>弹出值并打印</td>
+</tr>
+</tbody></table></div>
+<p>没有独立 <code>AND</code> / <code>OR</code> 指令：它们由条件跳转实现。VM 内用 <code>int64_t</code> 保存值，但静态检查和运行时检查确保 Sprout 可观察的 int 始终为 int32。此实现的字节码在内存中使用 <code>Instruction</code> 数组，没有字节流文件格式、装载器或不可信字节码校验器；不能把 <code>--bytecode</code> 文本输出当成可执行文件。</p>
+<h2 id="section-9">8. 两条完整编译路径<a class="heading-anchor" href="#section-9" aria-label="链接到本节">#</a></h2><pre><code class="language-text"><span class="code-line">源文件 → Lexer → Parser/AST → Checker → Generator → 字节码 → VM → 程序输出</span><span class="code-line">                                    └→ CppEmitter → C++11目标源码</span><span class="code-line">                                                     ↓ g++ / clang++ / MSVC</span><span class="code-line">                                                  本机可执行文件</span></code></pre><p>第二条是源码到源码编译，复用宿主工具链的寄存器分配、机器码生成、汇编和链接能力。生成器先将子表达式保存到临时变量，再调用 C++ 函数，避免依赖 C++11 未规定的函数实参求值顺序。输出不依赖 Sprout 编译器的头文件或库；整个目标文件可独立构建。</p>
+<p>本版本没有实现 SSA 优化器、LLVM 后端、直接 x86/RISC-V 机器码后端、汇编器或链接器。网站进阶章节讨论这些知识，并把它们作为在现有前后端之间继续扩展的任务，不宣称这些模块已经存在于主线代码中。</p>
+<h2 id="section-10">9. 源码阅读地图<a class="heading-anchor" href="#section-10" aria-label="链接到本节">#</a></h2><div class="table-scroll"><table>
+<thead>
+<tr>
+<th>符号</th>
+<th>阅读问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Pos</code>、<code>Error</code>、<code>Token</code></td>
+<td>如何把错误和原始源位置关联？</td>
+</tr>
+<tr>
+<td><code>Lexer::scan</code></td>
+<td>为什么先读完整标识符再识别关键字？</td>
+</tr>
+<tr>
+<td><code>Expr</code>、<code>Stmt</code>、<code>Function</code></td>
+<td>哪些字段在解析后还没有填好？</td>
+</tr>
+<tr>
+<td><code>Parser::expression</code></td>
+<td>为什么右侧递归使用 <code>precedence + 1</code>？</td>
+</tr>
+<tr>
+<td><code>Checker::check</code></td>
+<td>为何先建全部函数签名再分析函数体？</td>
+</tr>
+<tr>
+<td><code>Checker::expr</code>、<code>Checker::stmt</code></td>
+<td>如何把名字替换为槽位/函数编号？</td>
+</tr>
+<tr>
+<td><code>Generator::expr</code>、<code>Generator::stmt</code></td>
+<td>哪些跳转地址要回填？</td>
+</tr>
+<tr>
+<td><code>checked</code>、<code>binary</code>、<code>VM::call</code></td>
+<td>如何同时保证算术语义和调用帧隔离？</td>
+</tr>
+<tr>
+<td><code>CppEmitter::expr</code></td>
+<td>为什么为每个中间值生成临时变量？</td>
+</tr>
+<tr>
+<td><code>main</code></td>
+<td>为什么需要在创建 Lexer 之前保留源字符串的生命周期？</td>
+</tr>
+</tbody></table></div>
+<p>完整代码采用一个文件方便复制、浏览和定位，各阶段由注释分开。后续练习可以拆成头文件/源文件，但拆分不是理解编译流程的前置条件。</p>
+<h2 id="section-11">10. 资料来源边界<a class="heading-anchor" href="#section-11" aria-label="链接到本节">#</a></h2><p>课程组织参考了用户本地资源库的 <code>projects/README.md</code>、<code>projects/lexer/README.md</code>、<code>projects/parser/README.md</code>、<code>projects/code-generator/README.md</code>：它们将词法、语法、代码生成和 VM 作为分阶段任务，并强调规格和测试用例。编译器源码、语言规范和测试均为本教程原创实现；没有复制或再分发资料库的教材 PDF。</p>
+</article></main><aside class="on-this-page" aria-label="本页目录"><div class="tiny">本页导航</div><a class="toc-depth-2" href="#section-2">1. 最小完整程序</a><a class="toc-depth-2" href="#section-3">2. 命令行</a><a class="toc-depth-2" href="#section-4">3. 词法</a><a class="toc-depth-2" href="#section-5">4. 文法</a><a class="toc-depth-2" href="#section-6">5. 类型、名字和控制流</a><a class="toc-depth-2" href="#section-7">6. 运行语义</a><a class="toc-depth-2" href="#section-8">7. 字节码与调用约定</a><a class="toc-depth-2" href="#section-9">8. 两条完整编译路径</a><a class="toc-depth-2" href="#section-10">9. 源码阅读地图</a><a class="toc-depth-2" href="#section-11">10. 资料来源边界</a></aside></div>
+<footer class="footer">SPROUT / 从零造编译器 <span>理解原理，也把程序跑起来。</span><a href="references.html">资料与致谢</a></footer><div class="toast" id="toast" role="status"></div></body></html>
