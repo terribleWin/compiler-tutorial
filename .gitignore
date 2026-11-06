@@ -6,3 +6,11 @@ compiler/build*/
 __pycache__/
 verification/browser/
 lab23-artifacts/
+
+# VitePress generated Markdown, public copies, and build cache
+/site/*.md
+!/site/index.md
+/site/public/
+/site/.vitepress/cache/
+/site/.vitepress/.temp/
+/verification/browser-vitepress/

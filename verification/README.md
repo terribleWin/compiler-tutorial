@@ -1,6 +1,6 @@
 # 完整交付验证
 
-日期：2026-11-06。
+日期：2026-11-06。此文件保存首次交付记录；当前网页统一排版的验证见 [VITEPRESS-MIGRATION.md](VITEPRESS-MIGRATION.md)。
 
 ## 内容与实现
 

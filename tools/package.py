@@ -1,9 +1,13 @@
 """Create a deterministic downloadable source archive using only Python stdlib."""
 from pathlib import Path
 import zipfile
+import argparse
 
 root = Path(__file__).resolve().parents[1]
-target = root / 'docs' / 'downloads' / 'sprout-source.zip'
+parser = argparse.ArgumentParser()
+parser.add_argument('--output', default='docs/downloads/sprout-source.zip')
+args = parser.parse_args()
+target = root / args.output
 target.parent.mkdir(parents=True, exist_ok=True)
 files = [p for p in (root / 'compiler').rglob('*') if p.is_file()
          and not any(x.startswith('build') or x == '__pycache__' for x in p.relative_to(root / 'compiler').parts)

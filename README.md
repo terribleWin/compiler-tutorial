@@ -6,25 +6,25 @@
 
 ## 学习入口
 
-- `docs/index.html`：生成好的静态网站，可直接打开；全书搜索建议通过本地服务器或网站使用。
+- `docs/`：VitePress 生成的静态网站，通过线上地址或本地预览访问。
 - `content/`：可编辑 Markdown 课程正文，章节 01—25 和工具附录。
 - `compiler/`：真实可运行的编译器、语言规范、示例、测试和从零实作任务。
-- `assets/`：阅读界面、交互实验与代码块控件。
+- `site/.vitepress/`：VitePress 配置、Vue 交互实验、阅读控件与统一排版。
+- `brand/`：Sprout 原创 SVG Logo、单色版、深浅组合版和 favicon。
 - `verification/`：构建、链接和浏览器验证记录。
 
 ## 网站构建与预览
 
-需要 Node.js 20+、npm 和 Python 3；编译 Sprout 另需支持 C++11 的 GCC/Clang 或合适的 MSVC。
+需要 Node.js 22+、npm 和 Python 3；编译 Sprout 另需支持 C++11 的 GCC/Clang 或合适的 MSVC。
 
 ```sh
 npm ci
 npm run build
-python tools/package.py
 npm run check
-python -m http.server 8765 --directory docs
+npm run preview
 ```
 
-打开 http://localhost:8765 。站点无服务端、无账号、无需在线字体或 CDN；搜索、进度、主题与表达式编译在浏览器端运行。学习进度仅保存在当前浏览器。
+打开终端显示地址下的 `/compiler-tutorial/`。站点无服务端、无账号、无需在线字体或 CDN；搜索、进度、主题与表达式编译在浏览器端运行。学习进度仅保存在当前浏览器。
 
 ## 编译器
 
@@ -44,10 +44,19 @@ Windows 将可执行文件名改为 `sprout.exe`，以 `.\sprout.exe` 运行。�
 
 ## GitHub Pages
 
-已生成的 `docs/` 随仓库提交。仓库 Settings → Pages 使用 `Deploy from a branch`，分支 `main`，目录 `/docs`。每次更新正文后先重新构建并提交 docs。CI 负责四标准模式编译和站点完整性检查。
+已生成的 `docs/` 随仓库提交。仓库 Settings → Pages 使用 `Deploy from a branch`，分支 `main`，目录 `/docs`。每次更新正文后先重新构建并提交 docs。`content/` 保持单一正文来源，构建时自动准备 Markdown、下载文件和 VitePress 页面。CI 负责四标准模式编译和站点完整性检查。
 
 ## 资料使用与许可
 
 两个本地资料库用于建立主题地图与抽读核心材料，阅读记录在 `content/source-notes-*.md`，章节末有原始来源。本仓库不分发这些资料库中的教材、论文 PDF 或视频。课程讲解、示例和实现为本项目原创编排，不宣称逐页精读了两个目录的全部文件。
 
 源码按 MIT 许可；原创教程文字按 CC BY 4.0 许可。引用的外部文献与品牌仍归其权利人所有。见 `LICENSE` 与 `CONTENT-LICENSE.md`。
+
+
+## 统一版式与品牌
+
+采用 VitePress 1.6.4 默认文档主题，蓝色品牌。桌面正文18px、手机17px，代码约14px；原生 Shiki 高亮与复制，补充行号切换、换行、长代码折叠和放大。两个实验为 Vue 组件，适配站内无刷新导航；学习进度沿用原来的本地记录。
+
+品牌图形将编译角括号与分支新芽结合，提供透明 SVG，可用于网页、演示与印刷。品牌文件见 `brand/README.md`。
+
+`npm run check:browser` 是可选的实际浏览器验证，需要 Playwright 和 Chromium/Edge；可通过 `PLAYWRIGHT_MODULE` 与 `BROWSER_PATH` 指定本机安装。

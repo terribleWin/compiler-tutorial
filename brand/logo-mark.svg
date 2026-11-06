@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Sprout 品牌标志</title>
+  <desc id="desc">蓝色编译角括号环抱一株由分支和节点构成的青色新芽。</desc>
+  <defs>
+    <linearGradient id="brackets" x1="16" y1="26" x2="112" y2="104" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#496BF0"/>
+      <stop offset="1" stop-color="#3154CE"/>
+    </linearGradient>
+    <linearGradient id="growth" x1="48" y1="32" x2="80" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38C9C3"/>
+      <stop offset="1" stop-color="#148FA5"/>
+    </linearGradient>
+  </defs>
+  <path d="M35 31 14 64l21 33M93 31l21 33-21 33" stroke="url(#brackets)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M64 91V66c0-12 6-21 15-29" stroke="#496BF0" stroke-width="6" stroke-linecap="round"/>
+  <path d="M64 67C47 68 41 54 45 40c15-1 25 10 19 27Z" fill="url(#growth)"/>
+  <path d="M65 53c-1-17 11-29 27-26 2 17-10 30-27 26Z" fill="url(#growth)"/>
+  <circle cx="64" cy="96" r="6" fill="#496BF0"/>
+</svg>

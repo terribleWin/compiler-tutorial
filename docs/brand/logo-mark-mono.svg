@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Sprout 单色品牌标志</title>
+  <g fill="#3B5BD6">
+    <path d="M64 67C47 68 41 54 45 40c15-1 25 10 19 27ZM65 53c-1-17 11-29 27-26 2 17-10 30-27 26Z"/>
+    <circle cx="64" cy="96" r="6"/>
+  </g>
+  <g stroke="#3B5BD6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 31 14 64l21 33M93 31l21 33-21 33" stroke-width="9"/>
+    <path d="M64 91V66c0-12 6-21 15-29" stroke-width="6"/>
+  </g>
+</svg>
