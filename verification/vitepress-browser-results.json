@@ -9,11 +9,16 @@
     "desktop": 18,
     "mobileMinimum": 17
   },
-  "passed": 71,
+  "passed": 78,
   "checks": [
     "VitePress home title",
     "Native VitePress home layout",
     "Brand SVG loads in navigation",
+    "Minimal homepage has three course entries",
+    "Redundant site footer removed",
+    "Two educational experiment illustrations",
+    "Educational illustration loads",
+    "Educational illustration loads",
     "Desktop homepage fits viewport",
     "Native VitePress course sidebar",
     "All 25 chapters in sidebar",
@@ -80,6 +85,8 @@
     "chapter23.html mobile page has no horizontal overflow",
     "lab.html mobile page has no horizontal overflow",
     "tensor-lab.html mobile page has no horizontal overflow",
+    "Stale page refresh preserves route query and anchor",
+    "Stale cached HTML refreshes to current release",
     "No uncaught browser JavaScript errors: ",
     "No failed same-origin resources: "
   ],

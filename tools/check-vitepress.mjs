@@ -37,6 +37,10 @@ function resolveFile(url) {
 for (const entry of [...chapters, ...extras, { id: 'index' }, { id: 'spec' }, { id: 'exercises' }, { id: 'implementation' }]) {
   if (!fs.existsSync(path.join(docs, entry.id + '.html'))) errors.push('Missing page ' + entry.id);
 }
+const release = JSON.parse(fs.readFileSync(path.join(root, 'site-release.json'), 'utf8'));
+const publishedRelease = JSON.parse(fs.readFileSync(path.join(docs, 'release.json'), 'utf8'));
+if (release.version !== publishedRelease.version) errors.push('Published release metadata differs');
+if (!fs.readFileSync(path.join(root, 'README.md'), 'utf8').includes('?v=' + release.version)) errors.push('README entry is out of date');
 const files = walk(docs);
 let links = 0;
 let anchors = 0;
@@ -44,6 +48,8 @@ let numberedBlocks = 0;
 for (const file of files) {
   const html = read(file);
   const relative = path.relative(docs, file).split(path.sep).join('/');
+  if (!html.includes('name="sprout-release" content="' + release.version + '"')) errors.push(relative + ': outdated release marker');
+  if (html.includes('class="VPFooter')) errors.push(relative + ': redundant footer');
   const pageUrl = new URL(base + relative, origin);
   if (!/<html\b[^>]*\blang=["']zh-CN["']/.test(html)) errors.push(relative + ': missing Chinese document language');
   if ((relative !== '404.html' && !html.includes('VPNav')) || !html.toLowerCase().includes('vitepress')) errors.push(relative + ': missing VitePress layout/runtime');

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="260" viewBox="0 0 480 260" fill="none" class="sprout-expression-art" role="img" aria-labelledby="expression-title expression-desc">
+  <title id="expression-title">表达式二加三乘四的语法树</title>
+  <desc id="expression-desc">加法节点连接左侧数字二和右侧乘法子树；乘法子树连接数字三与四，说明乘法先于加法。</desc>
+  <style>
+    :root{--panel:#f7f9fd;--line:#dce4f2;--ink:#263653;--muted:#8190a8;--blue:#496bf0;--teal:#19a9ad;--blue-soft:#edf1ff;--teal-soft:#e5f6f6}
+    @media(prefers-color-scheme:dark){:root{--panel:#1b2331;--line:#35435c;--ink:#e2eafb;--muted:#93a3bd;--blue:#8da7ff;--teal:#53ceca;--blue-soft:#283754;--teal-soft:#203d43}}
+    .sprout-expression-art text{font-family:Consolas,"Liberation Mono",monospace;fill:var(--ink)}
+  </style>
+  <rect x="1" y="1" width="478" height="258" rx="16" fill="var(--panel)"/>
+  <rect x="24" y="24" width="134" height="34" rx="8" fill="var(--blue-soft)"/>
+  <text x="91" y="46" text-anchor="middle" font-size="14">2 + 3 * 4</text>
+  <path d="m240 72-103 53m103-53 93 53m0 40-53 38m53-38 54 38" stroke="var(--line)" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="240" cy="51" r="22" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
+  <text x="240" y="59" text-anchor="middle" font-size="26">+</text>
+  <circle cx="130" cy="144" r="23" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="130" y="152" text-anchor="middle" font-size="22">2</text>
+  <circle cx="335" cy="144" r="23" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+  <text x="335" y="154" text-anchor="middle" font-size="29">*</text>
+  <circle cx="277" cy="216" r="21" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <circle cx="391" cy="216" r="21" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="277" y="224" text-anchor="middle" font-size="21">3</text>
+  <text x="391" y="224" text-anchor="middle" font-size="21">4</text>
+</svg>

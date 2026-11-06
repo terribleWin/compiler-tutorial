@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="260" viewBox="0 0 480 260" fill="none" class="sprout-tensor-art" role="img" aria-labelledby="tensor-title tensor-desc">
+  <title id="tensor-title">矩阵乘法的分块计算</title>
+  <desc id="tensor-desc">三个四乘四矩阵依次表示输入A、输入B与输出C。输入矩阵中蓝色的二乘二小块相乘，累加到输出矩阵的青色小块。</desc>
+  <style>
+    :root{--panel:#f7f9fd;--cell:#fff;--line:#dce4f2;--ink:#263653;--muted:#8190a8;--blue:#496bf0;--teal:#19a9ad;--blue-soft:#edf1ff;--teal-soft:#e5f6f6}
+    @media(prefers-color-scheme:dark){:root{--panel:#1b2331;--cell:#1f293b;--line:#35435c;--ink:#e2eafb;--muted:#93a3bd;--blue:#8da7ff;--teal:#53ceca;--blue-soft:#283754;--teal-soft:#203d43}}
+    .sprout-tensor-art text{font-family:Consolas,"Liberation Mono",monospace;fill:var(--ink)}
+    .sprout-tensor-grid{stroke:var(--line);stroke-width:1}
+  </style>
+  <defs>
+    <g id="sprout-tensor-matrix">
+      <rect width="112" height="112" rx="7" fill="var(--cell)" stroke="var(--line)"/>
+      <path d="M28 0v112M56 0v112M84 0v112M0 28h112M0 56h112M0 84h112" class="sprout-tensor-grid"/>
+    </g>
+  </defs>
+  <rect x="1" y="1" width="478" height="258" rx="16" fill="var(--panel)"/>
+  <g font-size="16" font-weight="600" text-anchor="middle">
+    <text x="80" y="60">A</text>
+    <text x="240" y="60">B</text>
+    <text x="400" y="60">C</text>
+  </g>
+  <use href="#sprout-tensor-matrix" x="24" y="78"/>
+  <use href="#sprout-tensor-matrix" x="184" y="78"/>
+  <use href="#sprout-tensor-matrix" x="344" y="78"/>
+  <rect x="24.5" y="78.5" width="55" height="55" rx="6" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
+  <path d="M52 79v54M25 106h54" stroke="var(--blue)" stroke-opacity=".3"/>
+  <rect x="184.5" y="78.5" width="55" height="55" rx="6" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
+  <path d="M212 79v54M185 106h54" stroke="var(--blue)" stroke-opacity=".3"/>
+  <rect x="344.5" y="78.5" width="55" height="55" rx="6" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+  <path d="M372 79v54M345 106h54" stroke="var(--teal)" stroke-opacity=".3"/>
+  <g stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round">
+    <path d="m155 129 10 10m0-10-10 10"/>
+    <path d="M315 131h10m-10 6h10"/>
+  </g>
+  <path d="M25 221h54m106 0h54" stroke="var(--blue)" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  <path d="M345 221h54" stroke="var(--teal)" stroke-width="3" stroke-linecap="round" opacity=".65"/>
+</svg>

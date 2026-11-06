@@ -1,8 +1,8 @@
 {
   "pages": 38,
   "chapters": 25,
-  "localLinks": 2306,
-  "checkedAnchors": 411,
+  "localLinks": 2259,
+  "checkedAnchors": 409,
   "numberedCodeBlocks": 124,
   "sourceArchiveFiles": 18,
   "deploymentBase": "/compiler-tutorial/",

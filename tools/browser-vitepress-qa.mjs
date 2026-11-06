@@ -71,8 +71,22 @@ try {
   const logo = page.locator('.VPNavBarTitle img.logo').first();
   await logo.waitFor();
   check(await logo.evaluate(img => img.complete && img.naturalWidth > 0 && img.currentSrc.includes('/brand/logo-mark.svg')), 'Brand SVG loads in navigation');
+  check(await page.locator('.VPFeature').count() === 3, 'Minimal homepage has three course entries');
+  check(await page.locator('.VPFooter').count() === 0, 'Redundant site footer removed');
+  check(await page.locator('.sprout-practice-card img').count() === 2, 'Two educational experiment illustrations');
+  for(const picture of await page.locator('.sprout-practice-card img').all()) {
+    await picture.scrollIntoViewIfNeeded();
+    await picture.evaluate(img => img.decode());
+    check(await picture.evaluate(img => img.naturalWidth > 0), 'Educational illustration loads');
+  }
+  await page.evaluate(() => scrollTo(0, 0));
   check(await noOverflow(), 'Desktop homepage fits viewport');
   await screenshot('home-desktop', true);
+  await page.locator('.VPNavBar .VPSwitchAppearance').first().click();
+  await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+  await screenshot('home-dark', true);
+  await page.locator('.VPNavBar .VPSwitchAppearance').first().click();
+  await page.waitForFunction(() => !document.documentElement.classList.contains('dark'));
 
   await navigate('chapter07.html');
   check(await page.locator('.VPSidebar').count() === 1, 'Native VitePress course sidebar');
@@ -223,6 +237,20 @@ try {
     }
     await screenshot(name.replace('.html', '') + '-mobile');
   }
+  const release = JSON.parse(fs.readFileSync(path.join(root, 'site-release.json'), 'utf8'));
+  const cachedEntry = base + '?stale-test=1';
+  await page.route(cachedEntry, async route => {
+    const response = await route.fetch();
+    const body = (await response.text()).replaceAll(release.version, 'obsolete-cached-release');
+    await route.fulfill({response, body});
+  });
+  await page.goto(cachedEntry + '#practice-title').catch(error => {if(!error.message.includes('ERR_ABORTED'))throw error});
+  await page.waitForURL(url => url.searchParams.get('v') === release.version);
+  await page.waitForFunction(() => !!document.querySelector('#app')?.__vue_app__);
+  const refreshed = new URL(page.url());
+  check(refreshed.searchParams.get('stale-test') === '1' && refreshed.hash === '#practice-title', 'Stale page refresh preserves route query and anchor');
+  check(await page.locator('meta[name="sprout-release"]').getAttribute('content') === release.version, 'Stale cached HTML refreshes to current release');
+  await page.unroute(cachedEntry);
   check(errors.length === 0, 'No uncaught browser JavaScript errors: ' + errors.join('; '));
   check(failedResources.length === 0, 'No failed same-origin resources: ' + failedResources.join('; '));
   const report = { browser: 'Microsoft Edge (Chromium), headless', viewports: ['1440x1000', '390x844'], deploymentBase, bodyFontPx: { desktop: desktopFont, mobileMinimum: 17 }, passed: checks, checks: evidence, errors, failedResources };

@@ -2,7 +2,7 @@
 
 中文、面向编译原理新手的教学网站。25 章连接理论、手算、C++ 实现、练习答案与编译器工程；以 C++11 为共同基线，验证 C++14/17/20 模式。
 
-网站发布地址：[terriblewin.github.io/compiler-tutorial](https://terriblewin.github.io/compiler-tutorial/)。若首次发布尚在构建，请到仓库 Actions 检查 Pages 状态。
+**[在线阅读 · 当前版本](https://terriblewin.github.io/compiler-tutorial/?v=20261106-minimal)**
 
 ## 学习入口
 
@@ -24,7 +24,7 @@ npm run check
 npm run preview
 ```
 
-打开终端显示地址下的 `/compiler-tutorial/`。站点无服务端、无账号、无需在线字体或 CDN；搜索、进度、主题与表达式编译在浏览器端运行。学习进度仅保存在当前浏览器。
+打开终端显示地址下的 `/compiler-tutorial/`。字体、图示和脚本均随网站发布；搜索、进度和交互实验在浏览器运行。学习进度仅保存在当前浏览器。
 
 ## 编译器
 
@@ -44,7 +44,7 @@ Windows 将可执行文件名改为 `sprout.exe`，以 `.\sprout.exe` 运行。�
 
 ## GitHub Pages
 
-已生成的 `docs/` 随仓库提交。仓库 Settings → Pages 使用 `Deploy from a branch`，分支 `main`，目录 `/docs`。每次更新正文后先重新构建并提交 docs。`content/` 保持单一正文来源，构建时自动准备 Markdown、下载文件和 VitePress 页面。CI 负责四标准模式编译和站点完整性检查。
+已生成的 `docs/` 随仓库提交。仓库 Settings → Pages 使用 `Deploy from a branch`，分支 `main`，目录 `/docs`。每次更新正文后先重新构建并提交 docs。`content/` 保持单一正文来源，构建时自动准备 Markdown、下载文件和 VitePress 页面。CI 负责四标准模式编译和站点完整性检查。发布网页新版时，同步更新 `site-release.json` 与本页在线入口的版本参数；页面会检查发布版本，发现过期时刷新到当前版本。
 
 ## 资料使用与许可
 

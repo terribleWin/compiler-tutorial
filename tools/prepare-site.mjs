@@ -44,5 +44,7 @@ for (const name of fs.readdirSync(path.join(root, 'compiler/experiments'))) {
   if (name.endsWith('.py')) fs.copyFileSync(path.join(root, 'compiler/experiments', name), path.join(downloads, name));
 }
 fs.cpSync(path.join(root, 'brand'), path.join(publicDir, 'brand'), { recursive: true });
+fs.cpSync(path.join(root, 'illustrations'), path.join(publicDir, 'illustrations'), { recursive: true });
+fs.copyFileSync(path.join(root, 'site-release.json'), path.join(publicDir, 'release.json'));
 fs.writeFileSync(path.join(publicDir, '.nojekyll'), '');
 console.log(`Prepared ${chapters.length} chapters and ${extras.length + 3} supporting pages; original Markdown unchanged.`);

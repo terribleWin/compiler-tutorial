@@ -126,30 +126,28 @@
 .vp-doc .custom-block { font-size: 16px; line-height: 1.85; }
 .vp-doc .custom-block p { line-height: 1.85; }
 
-/* The native VitePress hero and features remain the primary home layout. */
-.VPHero .image-container { width: 260px; height: 260px; }
-.VPHero .image-src { width: 218px; height: 218px; max-width: 100%; max-height: 100%; }
-.VPHero .tagline { max-width: 610px; line-height: 1.75; }
-.VPFeature .title { font-size: 18px; line-height: 1.6; }
-.VPFeature .details { padding-top: 10px; font-size: 15px; line-height: 1.9; }
-.VPFeature .link-text { font-size: 14px; }
-.sprout-home-guides { max-width: 1152px; margin: 58px auto 20px; padding: 0 24px; }
-.sprout-home-guides h2 { font-size: 26px; line-height: 1.6; margin: 46px 0 22px; padding: 0; border: 0; }
-.sprout-pipeline { display: grid; grid-template-columns: repeat(6, 1fr); border: 1px solid var(--vp-c-divider); border-radius: 10px; overflow: hidden; }
-.sprout-pipeline a { display: flex; flex-direction: column; gap: 6px; padding: 22px 20px; border-right: 1px solid var(--vp-c-divider); color: var(--vp-c-text-1); text-decoration: none; transition: background-color 0.15s; }
-.sprout-pipeline a:last-child { border-right: 0; }
-.sprout-pipeline a:hover { background: var(--vp-c-brand-soft); }
-.sprout-pipeline span { color: var(--vp-c-brand-1); font-family: var(--vp-font-family-mono); font-size: 12px; }
-.sprout-pipeline strong { font-size: 16px; font-weight: 600; }
-.sprout-pipeline small { font-size: 13px; color: var(--vp-c-text-2); }
-.sprout-lab-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.sprout-lab-links > a { padding: 26px 28px; background: var(--vp-c-bg-alt); border: 1px solid var(--vp-c-divider); border-radius: 10px; color: var(--vp-c-text-1); text-decoration: none; transition: border-color 0.15s; }
-.sprout-lab-links > a:hover { border-color: var(--vp-c-brand-2); }
-.sprout-lab-links strong { display: block; font-size: 18px; font-weight: 600; }
-.sprout-lab-links strong span { float: right; color: var(--vp-c-brand-1); }
-.sprout-lab-links p { margin: 10px 0 16px; color: var(--vp-c-text-2); font-size: 15px; line-height: 1.8; }
-.sprout-lab-links code { font-family: var(--vp-font-family-mono); font-size: 13px; color: var(--vp-c-brand-1); background: var(--vp-c-brand-soft); padding: 5px 8px; border-radius: 4px; overflow-wrap: anywhere; }
-.sprout-home-note { max-width: 900px; margin: 30px 0 0; padding-bottom: 24px; font-size: 15px; line-height: 1.9; color: var(--vp-c-text-2); }
+/* A compact home: one illustration, three course entries, two visual labs. */
+.VPHero { padding-bottom: 42px !important; }
+.VPHero .name, .VPHero .text { font-size: 46px; line-height: 1.25; letter-spacing: -1.2px; }
+.VPHero .tagline { max-width: 540px; margin-top: 20px; font-size: 22px; line-height: 1.75; }
+.VPHero .image-container { width: 100%; max-width: 510px; height: 306px; }
+.VPHero .image-src { width: 100%; max-width: 510px; height: auto; max-height: none; }
+.VPHero .image-bg { display: none; }
+.VPFeature { border-radius: 10px !important; }
+.VPFeature .title { font-size: 17px; line-height: 1.6; }
+.VPFeature .details { padding-top: 8px; font-size: 15px; line-height: 1.7; }
+.sprout-practice { max-width: 1152px; margin: 42px auto 0; padding: 0 24px 16px; }
+.sprout-practice h2 { margin: 0 0 20px; padding: 0; border: 0; font-size: 23px; line-height: 1.5; }
+.sprout-practice-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; }
+.sprout-practice-card { display: block; min-width: 0; color: var(--vp-c-text-1) !important; text-decoration: none !important; }
+.sprout-practice-card img { display: block; width: 100%; height: auto; max-height: 225px; object-fit: contain; border: 1px solid var(--vp-c-divider); border-radius: 10px; background: var(--vp-c-bg-alt); }
+.sprout-practice-card > div { display: flex; justify-content: space-between; align-items: center; margin-top: 17px; }
+.sprout-practice-card h3 { margin: 0; font-size: 18px; line-height: 1.6; }
+.sprout-practice-card span { color: var(--vp-c-brand-1); }
+.sprout-practice-card p { margin: 4px 0 0; font-size: 15px; line-height: 1.7; color: var(--vp-c-text-2); }
+.sprout-practice-card:hover h3 { color: var(--vp-c-brand-1); }
+.VPHero .image-src, .sprout-practice-card img { color-scheme: light; }
+.dark .VPHero .image-src, .dark .sprout-practice-card img { color-scheme: dark; }
 
 /* Both interactive labs use the same surfaces and focus treatment as the book. */
 .sprout-lab, .lab-box { --sprout-lab-border: var(--vp-c-divider); --sprout-lab-surface: var(--vp-c-bg-alt); }
@@ -168,14 +166,10 @@
 .lab-box .tensor-statistics strong { color: var(--vp-c-brand-1); }
 
 @media (min-width: 1440px) {
-  .sprout-home-guides { padding: 0; }
+  .sprout-practice { padding-left: 0; padding-right: 0; }
 }
 @media (max-width: 959px) {
-  .sprout-home-guides { margin-top: 42px; padding: 0 32px; }
-  .sprout-pipeline { grid-template-columns: repeat(3, 1fr); }
-  .sprout-pipeline a { border-bottom: 1px solid var(--vp-c-divider); }
-  .sprout-pipeline a:nth-child(3) { border-right: 0; }
-  .sprout-pipeline a:nth-child(n+4) { border-bottom: 0; }
+  .sprout-practice { padding-left: 32px; padding-right: 32px; }
 }
 @media (max-width: 639px) {
   .vp-doc { font-size: 17px; line-height: 1.9; }
@@ -192,18 +186,14 @@
   .vp-doc [class*="language-"] code, .vp-doc .line-numbers-wrapper { font-size: 13.5px; }
   .VPNavBarTitle .logo { width: 30px; height: 30px; margin-right: 8px; }
   .VPNavBarTitle .title { font-size: 15px; }
-  .VPHero .image-container { width: 192px; height: 192px; }
-  .VPHero .image-src { width: 164px; height: 164px; }
+  .VPHero .image { margin-bottom: -24px; }
+  .VPHero .image-container { width: 100%; max-width: 360px; height: 210px; }
+  .VPHero .image-src { width: 100%; max-width: 360px; height: auto; }
+  .VPHero .name, .VPHero .text { font-size: 34px; }
   .VPHero .tagline { font-size: 18px; }
-  .VPFeature .title { font-size: 17px; }
-  .sprout-home-guides { padding: 0 24px; margin-top: 35px; }
-  .sprout-home-guides h2 { font-size: 23px; margin-top: 34px; }
-  .sprout-pipeline a { padding: 17px 12px; }
-  .sprout-pipeline strong { font-size: 14px; }
-  .sprout-pipeline small { font-size: 11px; }
-  .sprout-lab-links { grid-template-columns: 1fr; gap: 15px; }
-  .sprout-lab-links > a { padding: 22px; }
-  .sprout-lab-links strong { font-size: 17px; }
+  .sprout-practice { margin-top: 30px; padding: 0 24px; }
+  .sprout-practice-grid { grid-template-columns: 1fr; gap: 26px; }
+  .sprout-practice-card img { max-height: 195px; }
 }
 @media print {
   .vp-doc { font-size: 11pt; }
@@ -212,5 +202,5 @@
   .vp-doc [class*="language-"] code { font-size: 9pt; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sprout-pipeline a, .sprout-lab-links > a { transition: none; }
+  .sprout-practice-card { transition: none; }
 }

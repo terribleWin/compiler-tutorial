@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360" fill="none" role="img" aria-labelledby="journey-title journey-desc">
+  <title id="journey-title">从源码到语法树，再到字节码</title>
+  <desc id="journey-desc">一段二加三乘四的表达式，经过语法树组织为先乘后加的结构，再生成栈式指令并得到十四。</desc>
+  <style>
+    :root{--panel:#f7f9fd;--line:#dce4f2;--ink:#263653;--muted:#8190a8;--blue:#496bf0;--teal:#19a9ad;--blue-soft:#edf1ff;--teal-soft:#e5f6f6}
+    @media(prefers-color-scheme:dark){:root{--panel:#1b2331;--line:#35435c;--ink:#e2eafb;--muted:#93a3bd;--blue:#8da7ff;--teal:#53ceca;--blue-soft:#283754;--teal-soft:#203d43}}
+    .sprout-journey-label{font:600 10px/1 Arial,sans-serif;letter-spacing:1.5px;fill:var(--muted)}
+    .sprout-journey-mono{font-family:Consolas,"Liberation Mono",monospace;fill:var(--ink)}
+    .sprout-journey-edge{stroke:var(--line);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  </style>
+  <rect x="20" y="91" width="154" height="178" rx="16" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="39" y="118" class="sprout-journey-label">SOURCE</text>
+  <path d="m52 150-9 9 9 9m17-18 9 9-9 9m-7-21-7 25" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="39" y="208" class="sprout-journey-mono" font-size="17">2 + 3 * 4</text>
+  <path d="M40 231h58m8 0h29" stroke="var(--line)" stroke-width="4" stroke-linecap="round"/>
+
+  <path d="M186 180h26m-7-7 7 7-7 7" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="225" y="62" width="150" height="236" rx="16" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="244" y="89" class="sprout-journey-label">AST</text>
+  <path d="m300 133-39 46m39-46 37 46m0 30-22 42m22-42 20 42" class="sprout-journey-edge"/>
+  <circle cx="300" cy="118" r="20" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/>
+  <text x="300" y="124" text-anchor="middle" class="sprout-journey-mono" font-size="21">+</text>
+  <circle cx="258" cy="193" r="18" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="258" y="199" text-anchor="middle" class="sprout-journey-mono" font-size="17">2</text>
+  <circle cx="337" cy="193" r="18" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+  <text x="337" y="200" text-anchor="middle" class="sprout-journey-mono" font-size="22">*</text>
+  <circle cx="314" cy="266" r="16" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <circle cx="357" cy="266" r="16" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="314" y="272" text-anchor="middle" class="sprout-journey-mono" font-size="16">3</text>
+  <text x="357" y="272" text-anchor="middle" class="sprout-journey-mono" font-size="16">4</text>
+
+  <path d="M388 180h26m-7-7 7 7-7 7" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="426" y="91" width="154" height="178" rx="16" fill="var(--panel)" stroke="var(--line)"/>
+  <text x="445" y="118" class="sprout-journey-label">BYTECODE</text>
+  <g class="sprout-journey-mono" font-size="12">
+    <text x="445" y="150">PUSH 2</text>
+    <text x="445" y="171">PUSH 3</text>
+    <text x="445" y="192">PUSH 4</text>
+    <text x="445" y="213" fill="var(--teal)">MUL</text>
+    <text x="445" y="234" fill="var(--blue)">ADD</text>
+  </g>
+  <rect x="524" y="210" width="38" height="38" rx="10" fill="var(--blue-soft)"/>
+  <text x="543" y="235" text-anchor="middle" class="sprout-journey-mono" font-size="21" font-weight="600">14</text>
+</svg>

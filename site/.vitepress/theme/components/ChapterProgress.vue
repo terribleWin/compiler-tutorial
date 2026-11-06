@@ -33,10 +33,9 @@ onUnmounted(() => window.removeEventListener('storage', storage))
 
 <template>
   <section v-if="chapterId" class="sprout-chapter-progress" aria-label="本章学习进度">
-    <div class="sprout-progress-summary"><span>我的学习进度</span><span id="progress-count">{{ count }} / {{ total }}</span></div>
+    <div class="sprout-progress-summary"><span>学习进度</span><span id="progress-count">{{ count }} / {{ total }}</span></div>
     <div class="sprout-progress-track" role="progressbar" :aria-valuenow="count" :aria-valuemin="0" :aria-valuemax="total" aria-label="已完成章节数"><i id="progress-bar" :style="{width: percent + '%'}"></i></div>
-    <label class="sprout-progress-label"><input id="mark-complete" type="checkbox" :checked="complete" :disabled="!ready" :data-chapter="chapterId" @change="update"><span>我已完成本章，并检查了验收条件</span></label>
-    <p>进度保存在当前浏览器，可随时取消。</p>
+    <label class="sprout-progress-label"><input id="mark-complete" type="checkbox" :checked="complete" :disabled="!ready" :data-chapter="chapterId" @change="update"><span>本章已完成</span></label>
   </section>
 </template>
 

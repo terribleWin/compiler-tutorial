@@ -1,5 +1,9 @@
 import { defineConfig } from 'vitepress';
+import fs from 'node:fs';
 import { chapters, extras } from '../../tools/catalog.mjs';
+import { releaseCheck } from './release-check.mjs';
+
+const release = JSON.parse(fs.readFileSync(new URL('../../site-release.json', import.meta.url), 'utf8'));
 
 const sidebar = [];
 for (const chapter of chapters) {
@@ -36,7 +40,9 @@ export default defineConfig({
   lastUpdated: false,
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/compiler-tutorial/brand/favicon.svg' }],
-    ['meta', { name: 'theme-color', content: '#3265df' }]
+    ['meta', { name: 'theme-color', content: '#3265df' }],
+    ['meta', { name: 'sprout-release', content: release.version }],
+    ['script', {}, releaseCheck(release.version, '/compiler-tutorial/')]
   ],
   markdown: {
     lineNumbers: true,
@@ -59,12 +65,11 @@ export default defineConfig({
   },
   themeConfig: {
     logo: { src: '/brand/logo-mark.svg', alt: 'Sprout 萌芽与编译括号标志' },
-    siteTitle: 'Sprout 编译器书',
+    siteTitle: 'Sprout',
     nav: [
-      { text: '开始学习', link: '/chapter01', activeMatch: '/chapter' },
-      { text: '学习路线', link: '/roadmap' },
-      { text: '实验室', items: [{ text: '表达式编译实验', link: '/lab' }, { text: '张量分块实验', link: '/tensor-lab' }] },
-      { text: '配套源码', link: '/source' }
+      { text: '教程', link: '/chapter01', activeMatch: '/chapter' },
+      { text: '实验', items: [{ text: '表达式编译', link: '/lab' }, { text: '张量分块', link: '/tensor-lab' }] },
+      { text: '源码', link: '/source' }
     ],
     sidebar,
     outline: { level: [2, 3], label: '本页目录' },
@@ -88,7 +93,6 @@ export default defineConfig({
     },
     docFooter: { prev: '上一章', next: '下一章' },
     darkModeSwitchLabel: '外观', lightModeSwitchTitle: '切换为浅色模式', darkModeSwitchTitle: '切换为深色模式',
-    sidebarMenuLabel: '课程目录', returnToTopLabel: '回到顶部', skipToContentLabel: '跳到正文',
-    footer: { message: '理解原理，也把程序跑起来。', copyright: 'Sprout Compiler Book · 原创教程 CC BY 4.0 · 代码 MIT' }
+    sidebarMenuLabel: '课程目录', returnToTopLabel: '回到顶部', skipToContentLabel: '跳到正文'
   }
 });
